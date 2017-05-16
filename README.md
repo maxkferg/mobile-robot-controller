@@ -12,7 +12,7 @@ source setup.sh
 Running the control dashboard
 
 ```sh
-export CAR=1 && python car.py runserver
+export CAR=1 && sudo python car.py runserver --port=80
 ```
 
 Developing the car dashboard
