@@ -70,16 +70,13 @@ class Mock(object):
         pass
 
     def set_pwm_freq(self, freq_hz):
-        pass
-        #print("Mock: Set PWM frequency to {0} Hz".format(freq_hz))
+        print("Mock: Set PWM frequency to {0} Hz".format(freq_hz))
 
     def set_pwm(self, channel, on, off):
-        pass
-        #print("Mock: Set PWM channel={0} to {1} bits".format(channel,off))
+        print("Mock: Set PWM channel={0} to {1} bits".format(channel,off))
 
     def set_all_pwm(self, on, off):
-        pass
-        #print("Mock: Set all PWM to {0} bits".format(off))
+        print("Mock: Set all PWM to {0} bits".format(off))
 
 
 

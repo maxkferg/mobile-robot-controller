@@ -31,7 +31,7 @@ class PWM(object):
         print('{0}: changing pulse length to {1} ms'.format(self,length))
         total_period = 1000.0 / self.frequency 
         pulse_bits = int(self.resolution * length / total_period)
-        #print('{0}: changing pulse length to {1}/{2} bits'.format(self, pulse_bits, self.resolution))
+        print('{0}: changing pulse length to {1}/{2} bits'.format(self, pulse_bits, self.resolution))
         self.controller.set_pwm(self.channel, 0, pulse_bits)
         self.pulse_length = length
 
