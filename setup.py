@@ -14,14 +14,14 @@ classifiers = ['Development Status :: Alpha',
                'Programming Language :: Python :: 2.7',
                'Topic :: System :: Hardware']
 
-setup(name              = 'Stanford Toy Autonomous Racecar (STAR)',
+setup(name              = 'STAR',
       version           = '1.0.1',
       author            = 'Max Ferguson',
       author_email      = 'maxferg@stanford.edu',
       description       = 'Reinforcement learning code and hardware drivers for Stanford Toy Autonomous Racecar',
       license           = 'MIT',
       classifiers       = classifiers,
-      url               = 'https://github.com/maxkferg/cs234-project/',
+      url               = 'https://github.com/maxkferg/stanford-cs234-project/',
       dependency_links  = ['https://github.com/adafruit/Adafruit_Python_GPIO/tarball/master#egg=Adafruit-GPIO-0.6.5'],
       install_requires  = ['Adafruit-GPIO>=0.6.5'],
       packages          = find_packages())
