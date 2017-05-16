@@ -1,11 +1,19 @@
 #Stanford Toy Autonomous Racecar
 
 
+Setup
+
+```
+sudo pip install -r requirements.txt
+python setup.py install
+source setup.sh
+```
+
 
 Running the control dashboard
 
 ```sh
-python car.py runserver
+export CAR=1 && python car.py runserver
 ```
 
 Developing the car dashboard
