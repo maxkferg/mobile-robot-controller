@@ -25,7 +25,7 @@ class PWM(object):
         print('{0}: changing pulse length to {1} ms'.format(self,length))
         total_period = 1000.0 / self.frequency 
         pulse_bits = int(self.resolution * length / total_period)
-        print('{0}: changing pulse length to {1}/{2} bits'.format(self, pulse_bits, self.resolution))
+        #print('{0}: changing pulse length to {1}/{2} bits'.format(self, pulse_bits, self.resolution))
         self.controller.set_pwm(self.channel, 0, pulse_bits)
         self.pulse_length = length
 
@@ -72,24 +72,32 @@ class Steering(PWM):
         """
         Turn the car left by @amount
         """
-        return self.update_rotatation(-amount)
+        return self.update_rotation(-amount)
 
 
     def turn_right(self,amount=0.1):
         """
         Turn the car right by @amount
         """
-        return self.update_rotatation(amount)
+        return self.update_rotation(amount)
 
 
     def reset(self):
         """
         Return to the default throttle position
         """
-        self.update_rotatation(self.default_rotation-self.rotation)
+        print "]]]]"
+        self.update_rotation(self.default_rotation-self.rotation)
 
 
-    def update_rotatation(self,amount):
+    def get_rotation(self):
+        """
+        Return the current rotation
+        """
+        return self.rotation
+
+
+    def update_rotation(self,amount):
         """
         Rotate the car steering system by @amount. Return the current rotation
         
@@ -98,10 +106,10 @@ class Steering(PWM):
         very rapid changes in angle.
         """
         self.rotation += amount
-        self.rotation = min(self.rotation, self.pwm_max_pulse)
-        self.rotation = max(self.rotation, self.pwm_min_pulse)
+        self.rotation = max(self.rotation, self.min_rotation)
+        self.rotation = min(self.rotation, self.max_rotation)
         gradient = (self.pwm_max_pulse - self.pwm_min_pulse)/(self.max_rotation - self.min_rotation)
-        pulse = self.rotation*gradient + self.pwm_min_pulse
+        pulse = self.rotation*gradient + self.pwm_min_pulse - gradient*self.min_rotation
         assert pulse >= self.pwm_min_pulse
         assert pulse <= self.pwm_max_pulse
         self.set_pulse_length(pulse)
@@ -145,14 +153,14 @@ class Throttle(PWM):
         """
         Slow the car by @amount
         """
-        self.update_thottle(-amount)
+        self.update_thottle(amount)
 
 
     def decelerate(self,amount=0.1):
         """
         Accelerate the car by @amount
         """
-        self.update_thottle(amount)
+        self.update_thottle(-amount)
 
 
     def reset(self):
@@ -162,21 +170,41 @@ class Throttle(PWM):
         self.update_thottle(self.default_throttle-self.throttle)
 
 
+    def get_throttle(self):
+        """
+        Return the current (limited) speed
+        """
+        return self.throttle
+
+
     def limit_throttle(self,speed):
         """
         Return the new (limited) speed
         """
-        forward_stall = 0.25
+
         forward_max = 0.60
-        backward_stall = -0.25
         backward_max = -0.60
 
         if speed < backward_max:
             return backward_max
-        if backward_stall < speed and speed < forward_stall:
-            return self.default_throttle
-        if speed > forwward_max:
+        if speed > forward_max:
             return forward_max
+        return speed
+
+
+    def limit_pwm(self,pulse):
+        """
+        Return the new limited PWM
+        Certain PWM frequencies will cause damage, so we block them
+        """
+        pwm_stall_min = 1.35 # ms
+        pwm_stall_max = 1.65 # ms
+        pwm_stopped = 1.50 # ms
+        if pwm_stall_min < pulse and pulse < pwm_stall_max:
+            pulse = pwm_stopped 
+        assert pulse >= self.pwm_min_pulse # Sanity check
+        assert pulse <= self.pwm_max_pulse # Sanity check
+        return pulse
 
 
     def update_thottle(self,amount):
@@ -188,10 +216,9 @@ class Throttle(PWM):
         very rapid changes in angle.
         """
         self.throttle = self.limit_throttle(self.throttle+amount)
-        gradient = (self.pwm_min_pulse - self.pwm_min_pulse)/(self.max_throttle - self.min_throttle)
-        pulse = self.throttle * gradient + self.pwm_min_pulse
-        assert pulse >= self.pwm_min_pulse # Sanity check
-        assert pulse <= self.pwm_max_pulse # Sanity check
+        gradient = (self.pwm_max_pulse - self.pwm_min_pulse)/(self.max_throttle - self.min_throttle)
+        pulse = self.throttle * gradient + self.pwm_min_pulse - gradient*self.min_throttle
+        pulse = self.limit_pwm(pulse)
         self.set_pulse_length(pulse)
         return self.throttle
 
