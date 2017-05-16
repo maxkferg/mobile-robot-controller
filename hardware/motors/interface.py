@@ -1,5 +1,11 @@
-import time
+import os,time
 from drivers import PCA9685
+
+
+if os.environ.get('CAR'):
+    CONTROLLER = PCA9685.PCA9685()
+else:
+    CONTROLLER = PCA9685.Mock()
 
 
 class PWM(object):
@@ -15,7 +21,7 @@ class PWM(object):
         """
         self.channel = channel
         self.pulse_length = 0
-        self.controller = PCA9685.Mock()
+        self.controller = CONTROLLER
         self.controller.set_pwm_freq(self.frequency)
 
     def set_pulse_length(self, length):
