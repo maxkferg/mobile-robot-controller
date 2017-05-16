@@ -19,7 +19,6 @@ Jinja2==2.8
 Mako==1.0.4
 MarkupSafe==0.23
 mysql-connector==2.1.4
-psycopg2==2.7.1
 py==1.4.31
 py-bcrypt==0.4
 pycparser==2.14
@@ -31,4 +30,4 @@ requests==2.11.1
 six==1.10.0
 SQLAlchemy==1.0.14
 Werkzeug==0.11.10
-flask-corsz
+flask-cors==3.0.2
