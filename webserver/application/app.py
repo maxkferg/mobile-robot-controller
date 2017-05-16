@@ -1,7 +1,6 @@
 from flask import request, render_template, jsonify, url_for, redirect
 from flask_cors import CORS
 from .schema import schema
-from .models import User
 from ..index import app, db
 from sqlalchemy.exc import IntegrityError
 from .utils.auth import generate_token, requires_auth, verify_token
