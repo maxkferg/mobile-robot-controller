@@ -115,7 +115,7 @@ export class Home extends Component {
     // Initialize Apollo Client with URL to our server
     return new ApolloClient({
       networkInterface: createNetworkInterface({
-        uri: 'http://localhost:5000/graphql',
+        uri: '/graphql',
       }),
     });
   }

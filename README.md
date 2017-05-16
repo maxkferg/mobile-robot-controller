@@ -9,7 +9,6 @@ python setup.py install
 source setup.sh
 ```
 
-
 Running the control dashboard
 
 ```sh
