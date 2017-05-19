@@ -32,10 +32,10 @@ class HCSR04(object):
         We use the method `machine.time_pulse_us()` to get the microseconds until the echo is received.
         """
         self.trigger.low() # Stabilize the sensor
-        time.sleep(5.0/1000)
+        time.sleep(5.0/10**6)
         self.trigger.high()
         # Send a 10us pulse.
-        time.sleep(10.0/1000)
+        time.sleep(5.0/10**6)
         self.trigger.low()
         try:
             return self._wait_for_pulse(self.echo, self.echo_timeout_us)
@@ -44,20 +44,25 @@ class HCSR04(object):
                 raise OSError('Out of range')
             raise ex
 
+
+
+
     def _wait_for_pulse(self,listener,timeout):
         """
         Wait for a high in listener until timeout
         @timeout. The timeout in us
         """
         start = time.time()
-        duration = 1000*(time.time() - start)
+        duration = 10**6*(time.time() - start)
         while duration < timeout:
-            duration = 1000*(time.time() - start)
+            duration = 10**6*(time.time() - start)
             print "current listener value",listener.get_value()
             if listener.get_value():
                 return duration
-            time.sleep(1.0/1000)
+            time.sleep(1.0/10**6)
         raise OSError(110)
+
+
 
 
     def distance_mm(self):
