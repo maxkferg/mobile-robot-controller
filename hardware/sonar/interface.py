@@ -1,3 +1,4 @@
+import numpy as np
 from drivers.GPIO import Pin
 from drivers.HCSR04 import HCSR04
 
@@ -16,16 +17,22 @@ class Sonar(object):
         echo = Pin(self.echo_port, self.echo_pin, is_out=False)
         self.sensor = HCSR04(trigger, echo)
 
-    def distance(self):
+    def distance(self,n=10):
         """
         Return the distance in mm
+        Takes 10 sensor readings and returns the result
         If the distance is too large, the maximum is returned
         """
-        try:
-            return self.sensor.distance_mm()
-        except OSError:
-            print "No object detected"
-            return self.sensor.MAX_RANGE_MM
+        distances = []
+        for i in range(n):
+            try:
+                distances.append(self.sensor.distance_mm())
+            except OSError:
+                pass
+        if n==1 or len(distances) < n/2:
+            return HCSR04.MAX_RANGE_MM
+        return np.mean(distances)
+
 
 
 

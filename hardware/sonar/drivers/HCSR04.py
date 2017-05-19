@@ -41,10 +41,10 @@ class HCSR04(object):
         """
         # Stabilize the sensor
         self.trigger.low() 
-        sleep_us(5)
+        sleep_us(1000)
         # Wait until there is no sound
         while self.echo.get_value():
-            sleep_us(1)
+            sleep_us(100)
         # Send a 10us pulse.
         self.trigger.high()
         sleep_us(10)
@@ -58,20 +58,32 @@ class HCSR04(object):
 
 
 
-
     def _wait_for_pulse(self,listener,timeout):
         """
         Wait for a high in listener until timeout
         @timeout. The timeout in us
         """
+        if listener.get_value()==1:
+            return 0
+        duration = _wait_for_edge(timeout)
+        delay = _wait_for_edge(40) # It should fall again within 40 us
+        return duration
+
+
+
+    def _wait_for_edge(self,listener,timeout):
+        """
+        Wait for a rising or falling edge
+        @timeout. The timeout in us
+        """
         start = time.time()
         duration = 0
+        state = listener.get_value()
         while duration < timeout:
             duration = 10**6*(time.time() - start)
-            if listener.get_value():
+            if listener.get_value()!=state:
                 return duration
-            sleep_us(1.0)
-        raise OSError(110)
+        raise OSError(110)   
 
 
 
