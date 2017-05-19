@@ -1,5 +1,5 @@
 from drivers.GPIO import Pin
-from drivers.HCRSR04 import HCSR04
+from drivers.HCSR04 import HCSR04
 
 
 class Sonar(object):
