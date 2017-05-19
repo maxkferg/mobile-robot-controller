@@ -146,8 +146,7 @@ class Pin(object):
         except Exception as e:
             print "Unable to set GPIO direction"
             raise e
-        print "Updated {0} to value={1}".format(self.name,value)
-
+        
 
 
     def get_value(self):
