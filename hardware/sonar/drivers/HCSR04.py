@@ -11,14 +11,14 @@ class HCSR04(object):
     MAX_RANGE_MM = 4000
     TIMEOUT_US = 500*2*30
 
-    def __init__(self, trigger_pin, echo_pin, echo_timeout_us=HCSR04.TIMEOUT_US):
+    def __init__(self, trigger_pin, echo_pin, echo_timeout_us=None):
         """
         trigger_pin: Output pin to send pulses
         echo_pin: Readonly pin to measure the distance. The pin should be protected with 1k resistor
         echo_timeout_us: Timeout in microseconds to listen to echo pin. 
         By default is based in sensor limit range (4m)
         """
-        self.echo_timeout_us = echo_timeout_us
+        self.echo_timeout_us = echo_timeout_us or self.TIMEOUT_US
         self.trigger = trigger_pin
         self.trigger.low()
         self.echo = echo_pin
