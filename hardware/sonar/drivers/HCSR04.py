@@ -38,8 +38,7 @@ class HCSR04(object):
         time.sleep(10.0/1000)
         self.trigger.low()
         try:
-            pulse_time = self._wait_for_pulse(self.echo, self.echo_timeout_us)
-            return pulse_time
+            return self._wait_for_pulse(self.echo, self.echo_timeout_us)
         except OSError as ex:
             if ex.args[0] == 110: # 110 = ETIMEDOUT
                 raise OSError('Out of range')
@@ -54,6 +53,7 @@ class HCSR04(object):
         duration = 1000*(time.time() - start)
         while duration < timeout:
             duration = 1000*(time.time() - start)
+            print "current listener value",listener.get_value()
             if listener.get_value():
                 return duration
             time.sleep(1.0/1000)
@@ -71,7 +71,7 @@ class HCSR04(object):
         # the sound speed on air (343.2 m/s), that It's equivalent to
         # 0.34320 mm/us that is 1mm each 2.91us
         # pulse_time // 2 // 2.91 -> pulse_time // 5.82 -> pulse_time * 100 // 582 
-        mm = pulse_time * 100 // 582
+        mm = pulse_time * 100.0 // 582
         return mm
 
 
