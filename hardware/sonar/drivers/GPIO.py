@@ -26,7 +26,7 @@ J3A_PINS = {
 
 
 
-class Pin(Object):
+class Pin(object):
     """
     Represents a GPIO pin on the NVIDIA Jetson TX1
     """

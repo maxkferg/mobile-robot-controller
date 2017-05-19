@@ -2,7 +2,7 @@ from drivers.GPIO import Pin
 from drivers.HCRSR04 import HCSR04
 
 
-class Sonar(Object):
+class Sonar(object):
     """
     A sonar sensor on the Car
     """

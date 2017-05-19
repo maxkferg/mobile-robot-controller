@@ -1,6 +1,6 @@
 import time
 
-class HCSR04(Object):
+class HCSR04(object):
     """
     Driver to use the untrasonic sensor HC-SR04.
     The sensor range is between 2cm and 4m.
