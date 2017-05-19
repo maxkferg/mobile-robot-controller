@@ -1,120 +1,92 @@
+"""
+Measure the distance or depth with an HCSR04 Ultrasonic sound 
+sensor and a Raspberry Pi.  
+Imperial and Metric measurements are available"""
+
 import time
-
-
-def sleep_us(duration):
-    """
-    Sleep for @duration microseconds
-    """
-    time.sleep(duration/10.0**6)
+import math
+import RPi.GPIO as GPIO
 
 
 class HCSR04(object):
+    """Create a measurement using a HC-SR04 Ultrasonic Sensor connected to 
+    the GPIO pins of a Raspberry Pi.
+    Metric values are used by default. For imperial values use
+    unit='imperial'
+    temperature=<Desired temperature in Fahrenheit>
     """
-    Driver to use the untrasonic sensor HC-SR04.
-    The sensor range is between 2cm and 4m.
-    The timeouts received listening to echo pin are converted to OSError('Out of range')
-    """
-    # Timeout is based in chip range limit (400cm)
-    MAX_RANGE_CM = 400
-    MAX_RANGE_MM = 4000
-    TIMEOUT_US = 500.0*2*30/1000
 
-    def __init__(self, trigger_pin, echo_pin, echo_timeout_us=None):
+    def __init__(self, trig_pin, echo_pin, temperature=20, unit='metric',round_to=1):
+        self.trig_pin = trig_pin
+        self.echo_pin = echo_pin
+        self.temperature = temperature
+        self.unit = unit
+        self.round_to = round_to
+
+    def raw_distance(self, sample_size=11, sample_wait=0.1):
+        """Return an error corrected unrounded distance, in cm, of an object 
+        adjusted for temperature in Celcius.  The distance calculated
+        is the median value of a sample of `sample_size` readings.
+        
+        Speed of readings is a result of two variables.  The sample_size
+        per reading and the sample_wait (interval between individual samples).
+        Example: To use a sample size of 5 instead of 11 will increase the 
+        speed of your reading but could increase variance in readings;
+        value = sensor.Measurement(trig_pin, echo_pin)
+        r = value.raw_distance(sample_size=5)
+        
+        Adjusting the interval between individual samples can also
+        increase the speed of the reading.  Increasing the speed will also
+        increase CPU usage.  Setting it too low will cause errors.  A default
+        of sample_wait=0.1 is a good balance between speed and minimizing 
+        CPU usage.  It is also a safe setting that should not cause errors.
+        
+        e.g.
+        r = value.raw_distance(sample_wait=0.03)
         """
-        trigger_pin: Output pin to send pulses
-        echo_pin: Readonly pin to measure the distance. The pin should be protected with 1k resistor
-        echo_timeout_us: Timeout in microseconds to listen to echo pin. 
-        By default is based in sensor limit range (4m)
-        """
-        self.echo_timeout_us = echo_timeout_us or self.TIMEOUT_US
-        self.trigger = trigger_pin
-        self.trigger.low()
-        self.echo = echo_pin
 
+        if self.unit == 'imperial':
+            self.temperature = (self.temperature - 32) * 0.5556
+        elif self.unit == 'metric':
+            pass
+        else:
+            raise ValueError('Wrong Unit Type. Unit Must be imperial or metric')
 
+        speed_of_sound = 331.3 * math.sqrt(1+(self.temperature / 273.15))
+        sample = []
 
+        for distance_reading in range(sample_size):
+            self.trig_pin.low()
+            time.sleep(sample_wait)
+            self.trig_pin.high()
+            time.sleep(0.00001)
+            self.trig_pin.low()
+            echo_status_counter = 1
+            while self.echo_pin.get_value() == 0:
+                if echo_status_counter < 1000:
+                    sonar_signal_off = time.time()
+                    echo_status_counter += 1
+                else:
+                    raise SystemError('Echo pulse was not received')
+            while self.echo_pin.get_value() == 1:
+                sonar_signal_on = time.time()
+            time_passed = sonar_signal_on - sonar_signal_off
+            distance_cm = time_passed * ((speed_of_sound * 100) / 2)
+            sample.append(distance_cm)
+        sorted_sample = sorted(sample)
+        return sorted_sample[sample_size // 2]
 
-    def _send_pulse_and_wait(self):
-        """
-        Send the pulse to trigger and listen on echo pin.
-        We use the method `machine.time_pulse_us()` to get the microseconds until the echo is received.
-        """
-        # Stabilize the sensor
-        self.trigger.low() 
-        sleep_us(1000)
-        # Wait until there is no sound
-        while self.echo.get_value():
-            sleep_us(100)
-        # Send a 10us pulse.
-        self.trigger.high()
-        sleep_us(10)
-        self.trigger.low()
-        try:
-            return self._wait_for_pulse(self.echo, self.echo_timeout_us)
-        except OSError as ex:
-            if ex.args[0] == 110: # 110 = ETIMEDOUT
-                raise OSError('Out of range')
-            raise ex
+    def depth_metric(self, median_reading, hole_depth):
+        """Calculate the rounded metric depth of a liquid. hole_depth is the
+        distance, in cm's, from the sensor to the bottom of the hole."""
+        return round(hole_depth - median_reading, self.round_to)
 
+    def depth_imperial(self, median_reading, hole_depth):
+        """Calculate the rounded imperial depth of a liquid. hole_depth is the
+        distance, in inches, from the sensor to the bottom of the hole."""
+        return round(hole_depth - (median_reading * 0.394), self.round_to)
 
-
-    def _wait_for_pulse(self,listener,timeout):
-        """
-        Wait for a high in listener until timeout
-        @timeout. The timeout in us
-        """
-        if listener.get_value()==1:
-            return 0
-        duration = _wait_for_edge(timeout)
-        delay = _wait_for_edge(40) # It should fall again within 40 us
-        return duration
-
-
-
-    def _wait_for_edge(self,listener,timeout):
-        """
-        Wait for a rising or falling edge
-        @timeout. The timeout in us
-        """
-        start = time.time()
-        duration = 0
-        state = listener.get_value()
-        while duration < timeout:
-            duration = 10**6*(time.time() - start)
-            if listener.get_value()!=state:
-                return duration
-        raise OSError(110)   
-
-
-
-
-    def distance_mm(self):
-        """
-        Get the distance in milimeters without floating point operations.
-        """
-        pulse_time = self._send_pulse_and_wait()
-
-        # To calculate the distance we get the pulse_time and divide it by 2 
-        # (the pulse walk the distance twice) and by 29.1 becasue
-        # the sound speed on air (343.2 m/s), that It's equivalent to
-        # 0.34320 mm/us that is 1mm each 2.91us
-        # pulse_time // 2 // 2.91 -> pulse_time // 5.82 -> pulse_time * 100 // 582 
-        mm = pulse_time * 100.0 / 582
-        return mm
-
-
-
-
-    def distance_cm(self):
-        """
-        Get the distance in centimeters with floating point operations.
-        It returns a float
-        """
-        pulse_time = self._send_pulse_and_wait()
-
-        # To calculate the distance we get the pulse_time and divide it by 2 
-        # (the pulse walk the distance twice) and by 29.1 becasue
-        # the sound speed on air (343.2 m/s), that It's equivalent to
-        # 0.034320 cm/us that is 1cm each 29.1us
-        cms = (pulse_time / 2) / 29.1
-        return cms
+    def distance_metric(self, median_reading):
+        """Calculate the rounded metric distance, in cm's, from the sensor
+        to an object"""
+        return round(median_reading, self.round_to)

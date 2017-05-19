@@ -17,22 +17,14 @@ class Sonar(object):
         echo = Pin(self.echo_port, self.echo_pin, is_out=False)
         self.sensor = HCSR04(trigger, echo)
 
-    def distance(self,n=10):
+    def distance(self):
         """
-        Return the distance in mm
-        Takes 10 sensor readings and returns the result
+        Return the distance in cm
+        Takes 11 sensor readings and returns the result
         If the distance is too large, the maximum is returned
         """
-        distances = []
-        for i in range(n):
-            try:
-                distances.append(self.sensor.distance_mm())
-            except OSError:
-                pass
-        if n==1 or len(distances) < n/2:
-            return HCSR04.MAX_RANGE_MM
-        return np.mean(distances)
-
+        return self.sensor.distance_metric()
+        
 
 
 
