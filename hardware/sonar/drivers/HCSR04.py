@@ -1,5 +1,13 @@
 import time
 
+
+def sleep_us(duration):
+    """
+    Sleep for @duration microseconds
+    """
+    time.sleep(duration/10.0**6)
+
+
 class HCSR04(object):
     """
     Driver to use the untrasonic sensor HC-SR04.
@@ -31,11 +39,15 @@ class HCSR04(object):
         Send the pulse to trigger and listen on echo pin.
         We use the method `machine.time_pulse_us()` to get the microseconds until the echo is received.
         """
-        self.trigger.low() # Stabilize the sensor
-        time.sleep(5.0/10**6)
-        self.trigger.high()
+        # Stabilize the sensor
+        self.trigger.low() 
+        sleep_us(5)
+        # Wait until there is no sound
+        while self.echo.get_value():
+            sleep_us(1)
         # Send a 10us pulse.
-        time.sleep(5.0/10**6)
+        self.trigger.high()
+        sleep_us(10)
         self.trigger.low()
         try:
             return self._wait_for_pulse(self.echo, self.echo_timeout_us)
@@ -53,13 +65,13 @@ class HCSR04(object):
         @timeout. The timeout in us
         """
         start = time.time()
-        duration = 10**6*(time.time() - start)
+        duration = 0
         while duration < timeout:
             duration = 10**6*(time.time() - start)
             print "current listener value",listener.get_value()
             if listener.get_value():
                 return duration
-            time.sleep(1.0/10**6)
+            sleep_us(1.0)
         raise OSError(110)
 
 
@@ -76,7 +88,7 @@ class HCSR04(object):
         # the sound speed on air (343.2 m/s), that It's equivalent to
         # 0.34320 mm/us that is 1mm each 2.91us
         # pulse_time // 2 // 2.91 -> pulse_time // 5.82 -> pulse_time * 100 // 582 
-        mm = pulse_time * 100.0 // 582
+        mm = pulse_time * 100.0 / 582
         return mm
 
 
