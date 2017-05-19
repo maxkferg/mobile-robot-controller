@@ -35,10 +35,10 @@ class FrontSonar(Sonar):
     """
     # Input - J21 - Pin 31 - GPIO9_MOTION_INT
     echo_port = "J21"
-    echo_pin = 31 
+    echo_pin = "31" 
     # Output - J21 - Pin 37 - GPIO8_ALS_PROX_INT
     trigger_port = "J21"
-    trigger_pin = 37
+    trigger_pin = "37"
 
 
 
@@ -48,10 +48,14 @@ class RearSonar(Sonar):
     """
     # Input - J21 - Pin 31 - GPIO9_MOTION_INT
     echo_port = "J21"
-    echo_pin = 31 
+    echo_pin = "31" 
     # Output - J21 - Pin 37 - GPIO8_ALS_PROX_INT
     tirgger_port = "J21"
-    trigger_pin = 37
+    trigger_pin = "37"
 
 
+
+if __name__=="__main__":
+    f = FrontSonar()
+    print f.distance()
 

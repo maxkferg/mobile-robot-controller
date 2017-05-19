@@ -3,25 +3,25 @@
 SYSFS_GPIO_DIR = "/sys/class/gpio"
 
 J21_PINS = {
-    32: "gpio36",      # J21 - Pin 32 - Unused - AO_DMIC_IN_CLK
-    16: "gpio37",      # J21 - Pin 16 - Unused - AO_DMIC_IN_DAT
-    13: "gpio38",      # J21 - Pin 13 - Bidir  - GPIO20/AUD_INT
-    33: "gpio63",      # J21 - Pin 33 - Bidir  - GPIO11_AP_WAKE_BT
-    18: "gpio184",    # J21 - Pin 18 - Input  - GPIO16_MDM_WAKE_AP
-    31: "gpio186",    # J21 - Pin 31 - Input  - GPIO9_MOTION_INT
-    37: "gpio187",    # J21 - Pin 37 - Output - GPIO8_ALS_PROX_INT
-    29: "gpio219",    # J21 - Pin 29 - Output - GPIO19_AUD_RST
+    "32": "gpio36",      # J21 - Pin 32 - Unused - AO_DMIC_IN_CLK
+    "16": "gpio37",      # J21 - Pin 16 - Unused - AO_DMIC_IN_DAT
+    "13": "gpio38",      # J21 - Pin 13 - Bidir  - GPIO20/AUD_INT
+    "33": "gpio63",      # J21 - Pin 33 - Bidir  - GPIO11_AP_WAKE_BT
+    "18": "gpio184",    # J21 - Pin 18 - Input  - GPIO16_MDM_WAKE_AP
+    "31": "gpio186",    # J21 - Pin 31 - Input  - GPIO9_MOTION_INT
+    "37": "gpio187",    # J21 - Pin 37 - Output - GPIO8_ALS_PROX_INT
+    "29": "gpio219",    # J21 - Pin 29 - Output - GPIO19_AUD_RST
 }
 
 J3A_PINS = {
-    50: "gpio57",     # J3A1 - Pin 50
-    40: "gpio160",    # J3A2 - Pin 40  
-    43: "gpio161",    # J3A2 - Pin 43
-    46: "gpio162",    # J3A2 - Pin 46
-    49: "gpio163",    # J3A2 - Pin 49
-    52: "gpio164",    # J3A2 - Pin 52
-    55: "gpio165",    # J3A2 - Pin 55
-    58: "gpio166"     # J3A2 - Pin 58
+    "50": "gpio57",     # J3A1 - Pin 50
+    "40": "gpio160",    # J3A2 - Pin 40  
+    "43": "gpio161",    # J3A2 - Pin 43
+    "46": "gpio162",    # J3A2 - Pin 46
+    "49": "gpio163",    # J3A2 - Pin 49
+    "52": "gpio164",    # J3A2 - Pin 52
+    "55": "gpio165",    # J3A2 - Pin 55
+    "58": "gpio166"     # J3A2 - Pin 58
 }
 
 
@@ -48,7 +48,16 @@ class Pin(object):
             raise Exception("No such pin: {0} on port {1}".format(pin,port))
         # The pin and port are valid
         # Set the output
+        self.id = self.name.strip("gpio")
+        self.enable()
         self.set_direction(is_out)
+
+
+    def __del__(self):
+        """
+        Disable the pin
+        """
+        self.disable()
 
 
     def low(self):
@@ -64,6 +73,38 @@ class Pin(object):
         Set the pin to the low state (convenience method)
         """
         self.set_value(0)
+
+
+
+    def enable(self):
+        """
+        Open the GPIO pin for usage
+        """ 
+        filename = "{0}/export".format(SYSFS_GPIO_DIR, self.name)
+
+        try:
+            with open(filename,'w') as buff:
+                buff.write(self.id)       
+        except Exception as e:
+            print "Unable to setup {0}".format(self.name)
+            raise e
+        print "Enabled pin {0}".format(self.name)
+
+
+
+    def disable(self):
+        """
+        Disable the GPIO pin
+        """ 
+        filename = "{0}/unexport".format(SYSFS_GPIO_DIR, self.name)
+
+        try:
+            with open(filename,'w') as buff:
+                buff.write(self.id)       
+        except Exception as e:
+            print "Unable to disable {0}".format(self.name)
+            raise e
+        print "Disabled pin {0}".format(self.name)
 
 
 
