@@ -1,6 +1,6 @@
 
 
-SYSFS_GPIO_DIR "/sys/class/gpio"
+SYSFS_GPIO_DIR = "/sys/class/gpio"
 
 J21_PINS = {
     32: "gpio36",      # J21 - Pin 32 - Unused - AO_DMIC_IN_CLK
