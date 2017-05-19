@@ -72,7 +72,7 @@ class Pin(object):
         """
         Set the pin to the low state (convenience method)
         """
-        self.set_value(0)
+        self.set_value(1)
 
 
 
@@ -125,7 +125,7 @@ class Pin(object):
         except Exception as e:
             print "Unable to set GPIO direction"
             raise e
-        print "Updated pin {0} to direction={1}".format(self.name, value)
+        print "Updated pin {0} to is_out={1}".format(self.name, is_out)
 
 
 
@@ -147,7 +147,7 @@ class Pin(object):
         except Exception as e:
             print "Unable to set GPIO direction"
             raise e
-        print "Updated {0} to value={1}".format(value)
+        print "Updated {0} to value={1}".format(self.name,value)
 
 
 
@@ -160,11 +160,9 @@ class Pin(object):
 
         try:
             with open(filename) as buff:
-                value = buff.read()
-                if value=="1":
-                    return 1 
-                elif value=="0":
-                    return 0
+                value = buff.read().strip()
+                if value=="1" or value=="0":
+                    return int(value)
                 else:
                     raise Exception("Unknown value from pin {0}: {1}".format(self.name, value)) 
         except Exception as e:

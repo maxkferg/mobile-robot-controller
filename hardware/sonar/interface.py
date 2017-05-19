@@ -56,6 +56,11 @@ class RearSonar(Sonar):
 
 
 if __name__=="__main__":
-    f = FrontSonar()
-    print f.distance()
+    command = None 
+    sonar = FrontSonar()
+    print "Press q to Quit"
+    while command!="q":
+        dist = sonar.distance()
+        command = raw_input()
+        print "Distance: {0}".format(dist)
 

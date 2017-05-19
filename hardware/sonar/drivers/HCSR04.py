@@ -9,7 +9,7 @@ class HCSR04(object):
     # Timeout is based in chip range limit (400cm)
     MAX_RANGE_CM = 400
     MAX_RANGE_MM = 4000
-    TIMEOUT_US = 500*2*30
+    TIMEOUT_US = 500.0*2*30/1000
 
     def __init__(self, trigger_pin, echo_pin, echo_timeout_us=None):
         """
@@ -32,20 +32,32 @@ class HCSR04(object):
         We use the method `machine.time_pulse_us()` to get the microseconds until the echo is received.
         """
         self.trigger.low() # Stabilize the sensor
-        time.sleep_us(5)
+        time.sleep(5.0/1000)
         self.trigger.high()
         # Send a 10us pulse.
-        time.sleep_us(10)
+        time.sleep(10.0/1000)
         self.trigger.low()
         try:
-            pulse_time = machine.time_pulse_us(self.echo, 1, self.echo_timeout_us)
+            pulse_time = self._wait_for_pulse(self.echo, self.echo_timeout_us)
             return pulse_time
         except OSError as ex:
             if ex.args[0] == 110: # 110 = ETIMEDOUT
                 raise OSError('Out of range')
             raise ex
 
-
+    def _wait_for_pulse(self,listener,timeout):
+        """
+        Wait for a high in listener until timeout
+        @timeout. The timeout in us
+        """
+        start = time.time()
+        duration = 1000*(time.time() - start)
+        while duration < timeout:
+            duration = 1000*(time.time() - start)
+            if listener.get_value():
+                return duration
+            time.sleep(1.0/1000)
+        raise OSError(110)
 
 
     def distance_mm(self):
