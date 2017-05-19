@@ -12,7 +12,7 @@ class Sonar(object):
     trigger_pin = None
 
     def __init__(self):
-        trigger = Pin(trigger_port, self.trigger_pin, is_out=True)
+        trigger = Pin(self.trigger_port, self.trigger_pin, is_out=True)
         echo = Pin(self.echo_port, self.echo_pin, is_out=False)
         self.sensor = HCSR04(trigger, echo)
 
