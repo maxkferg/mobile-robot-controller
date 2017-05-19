@@ -1,12 +1,12 @@
 import os,time
 from drivers import PCA9685
 
+BUSNUM=0
 
-if os.environ.get('CAR'):
-    CONTROLLER = PCA9685.PCA9685()
+if os.environ.get('DEV'):
+    CONTROLLER = PCA9685l.Mock()
 else:
-    CONTROLLER = PCA9685.Mock()
-
+    CONTROLLER = PCA9685.PCA9685(busnum=BUSNUM)
 
 class PWM(object):
     """
