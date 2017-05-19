@@ -68,7 +68,6 @@ class HCSR04(object):
         duration = 0
         while duration < timeout:
             duration = 10**6*(time.time() - start)
-            print "current listener value",listener.get_value()
             if listener.get_value():
                 return duration
             sleep_us(1.0)
