@@ -32,9 +32,9 @@ class FrontSonar(Sonar):
     """
     The front sonar sensor on the STAR Car
     """
-    # Input - J21 - Pin 31 - GPIO9_MOTION_INT
+    # Input - J21 - Pin 31 - GPIO11_AP_WAKE_BT
     echo_port = "J21"
-    echo_pin = "31" 
+    echo_pin = "33" 
     # Output - J21 - Pin 37 - GPIO8_ALS_PROX_INT
     trigger_port = "J21"
     trigger_pin = "37"
@@ -48,16 +48,17 @@ class RearSonar(Sonar):
     # Input - J21 - Pin 31 - GPIO9_MOTION_INT
     echo_port = "J21"
     echo_pin = "31" 
-    # Output - J21 - Pin 37 - GPIO8_ALS_PROX_INT
+    # Output - J21 - Pin 29 - GPIO19_AUD_RST
     tirgger_port = "J21"
-    trigger_pin = "37"
+    trigger_pin = "29"
 
 
 
 if __name__=="__main__":
     command = None 
-    sonar = FrontSonar()
+    front = FrontSonar()
+    back = BackSonar()
     while True:
-        dist = sonar.distance()
-        print "Distance: {0}".format(dist)
+        print "Front: {0}".format(front.distance())
+        print "Back: {0}".format(back.distance())
 

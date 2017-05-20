@@ -5,26 +5,26 @@ Imperial and Metric measurements are available"""
 
 import time
 import math
-import RPi.GPIO as GPIO
 
 
 class HCSR04(object):
-    """Create a measurement using a HC-SR04 Ultrasonic Sensor connected to 
+    """
+    Create a measurement using a HC-SR04 Ultrasonic Sensor connected to 
     the GPIO pins of a Raspberry Pi.
     Metric values are used by default. For imperial values use
     unit='imperial'
     temperature=<Desired temperature in Fahrenheit>
     """
+    max_distance_cm = 5000 # cm
 
-    def __init__(self, trig_pin, echo_pin, temperature=20, unit='metric',round_to=1):
+    def __init__(self, trig_pin, echo_pin, temperature=20):
         self.trig_pin = trig_pin
         self.echo_pin = echo_pin
         self.temperature = temperature
-        self.unit = unit
-        self.round_to = round_to
 
     def raw_distance(self, sample_size=11, sample_wait=0.1):
-        """Return an error corrected unrounded distance, in cm, of an object 
+        """
+        Return an error corrected unrounded distance, in cm, of an object 
         adjusted for temperature in Celcius.  The distance calculated
         is the median value of a sample of `sample_size` readings.
         
@@ -45,48 +45,49 @@ class HCSR04(object):
         r = value.raw_distance(sample_wait=0.03)
         """
 
-        if self.unit == 'imperial':
-            self.temperature = (self.temperature - 32) * 0.5556
-        elif self.unit == 'metric':
-            pass
-        else:
-            raise ValueError('Wrong Unit Type. Unit Must be imperial or metric')
-
         speed_of_sound = 331.3 * math.sqrt(1+(self.temperature / 273.15))
+        sample_timeout = max_distance_cm / speed_of_sound / 100
         sample = []
 
         for distance_reading in range(sample_size):
-            self.trig_pin.low()
-            time.sleep(sample_wait)
-            self.trig_pin.high()
-            time.sleep(0.00001)
-            self.trig_pin.low()
-            echo_status_counter = 1
-            while self.echo_pin.get_value() == 0:
-                if echo_status_counter < 1000:
-                    sonar_signal_off = time.time()
-                    echo_status_counter += 1
-                else:
-                    raise SystemError('Echo pulse was not received')
-            while self.echo_pin.get_value() == 1:
-                sonar_signal_on = time.time()
-            time_passed = sonar_signal_on - sonar_signal_off
+            time_passed = self.take_sample(sample_timeout)
             distance_cm = time_passed * ((speed_of_sound * 100) / 2)
             sample.append(distance_cm)
         sorted_sample = sorted(sample)
         return sorted_sample[sample_size // 2]
 
-    def depth_metric(self, median_reading, hole_depth):
-        """Calculate the rounded metric depth of a liquid. hole_depth is the
-        distance, in cm's, from the sensor to the bottom of the hole."""
-        return round(hole_depth - median_reading, self.round_to)
 
-    def depth_imperial(self, median_reading, hole_depth):
-        """Calculate the rounded imperial depth of a liquid. hole_depth is the
-        distance, in inches, from the sensor to the bottom of the hole."""
-        return round(hole_depth - (median_reading * 0.394), self.round_to)
+    def take_sample(sample_timeout):
+        """
+        Take a sonar reading 
+        Return the time required for the echo to bounce, or timeout
+        Return 0 if the signal bounces back immediately
+        """
+        self.trig_pin.low()
+        time.sleep(sample_wait)
+        self.trig_pin.high()
+        self.sleep_us(10)
+        self.trig_pin.low()
+        # Check if the echo has already bounced back
+        sonar_started = time.time()
+        if self.echo_pin.get_value()==0:
+            print "Sonar already bounced"
+            return 0
+        # Wait for the sonar to return
+        while self.echo_pin.get_value()==1:
+            duration = time.time() - sonar_started
+            if duration>sample_timeout:
+                print "Sonar timeout"
+                return duration
+            self.sleep_us(1000)
+        # The sigal has returned
+        return time.time() - sonar_started
 
-    def distance_metric(self, median_reading):
-        """Calculate the rounded metric distance, in cm's, from the sensor
-        to an object"""
-        return round(median_reading, self.round_to)
+
+    def sleep_us(self,duration):
+        """
+        Sleep for @duration (us)
+        """
+        return time.sleep(duration/10.0**6)
+
+
