@@ -1,5 +1,6 @@
 import os,time
-from drivers import Mock,PCA9685
+from builtins import range
+from .drivers import Mock,PCA9685
 
 
 if os.environ.get('DEV'):
@@ -27,7 +28,7 @@ class PWM(object):
         Set the length of the PWM pulse length (in ms)
         """
         print('{0}: changing pulse length to {1} ms'.format(self,length))
-        total_period = 1000.0 / self.frequency
+        total_period = 1000/self.frequency
         pulse_bits = int(self.resolution * length / total_period)
         print('{0}: changing pulse length to {1}/{2} bits'.format(self, pulse_bits, self.resolution))
         self.controller.set_pwm(self.channel, 0, pulse_bits)
@@ -91,7 +92,6 @@ class Steering(PWM):
         """
         Return to the default throttle position
         """
-        print "]]]]"
         self.update_rotation(self.default_rotation-self.rotation)
 
 

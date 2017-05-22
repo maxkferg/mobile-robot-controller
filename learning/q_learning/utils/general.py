@@ -1,9 +1,10 @@
 import time
 import sys
 import logging
-import numpy as np
-from collections import deque
 import matplotlib
+import numpy as np
+from builtins import range
+from collections import deque
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
 
@@ -17,7 +18,7 @@ def export_plot(ys, ylabel, filename):
         filename: (string) directory
     """
     plt.figure()
-    plt.plot(range(len(ys)), ys)
+    plt.plot(list(range(len(ys))), ys)
     plt.xlabel("Epoch")
     plt.ylabel(ylabel)
     plt.savefig(filename)
@@ -40,7 +41,7 @@ def get_logger(filename):
 
 class Progbar(object):
     """Progbar class copied from keras (https://github.com/fchollet/keras/)
-    
+
     Displays a progress bar.
     Small edit : added strict arg to update
     # Arguments
@@ -118,7 +119,7 @@ class Progbar(object):
             self.total_width = len(bar)
 
             if current:
-                time_per_unit = (now - self.start) / current
+                time_per_unit = (now - self.start)/current
             else:
                 time_per_unit = 0
             eta = time_per_unit*(self.target - current)
@@ -129,11 +130,11 @@ class Progbar(object):
                 info += ' - %ds' % (now - self.start)
             for k in self.unique_values:
                 if type(self.sum_values[k]) is list:
-                    info += ' - %s: %.4f' % (k, self.sum_values[k][0] / max(1, self.sum_values[k][1]))
+                    info += ' - %s: %.4f' % (k, self.sum_values[k][0]/max(1, self.sum_values[k][1]))
                 else:
                     info += ' - %s: %s' % (k, self.sum_values[k])
 
-            for k, v in self.exp_avg.iteritems():
+            for k, v in list(self.exp_avg.items()):
                 info += ' - %s: %.4f' % (k, v)
 
             self.total_width += len(info)
@@ -150,7 +151,7 @@ class Progbar(object):
             if current >= self.target:
                 info = '%ds' % (now - self.start)
                 for k in self.unique_values:
-                    info += ' - %s: %.4f' % (k, self.sum_values[k][0] / max(1, self.sum_values[k][1]))
+                    info += ' - %s: %.4f' % (k, self.sum_values[k][0]/max(1, self.sum_values[k][1]))
                 sys.stdout.write(info + "\n")
 
     def add(self, n, values=[]):

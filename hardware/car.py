@@ -1,8 +1,9 @@
 """
 Represents all of the controls for the car
 """
-from motors import Throttle, Steering
-from sonar import FrontSonar, RearSonar
+from builtins import object
+from .motors import Throttle, Steering
+from .sonar import FrontSonar, RearSonar
 
 class Car(object):
 

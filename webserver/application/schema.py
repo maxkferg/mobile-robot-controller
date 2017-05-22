@@ -17,7 +17,7 @@ class CarState(graphene.ObjectType):
 class CarMutation(graphene.Mutation):
     """Adjust the car steering and throttle"""
 
-    class Input:
+    class Input():
         left = graphene.Float()
         right = graphene.Float()
         accelerate = graphene.Float()

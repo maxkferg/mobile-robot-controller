@@ -1,10 +1,10 @@
 import argparse
 import tensorflow as tf
-from environments.car import CarEnvironment
-from environments.test import TestEnvironment
-from q_learning.configs.linear import config
-from q_learning.schedule import LinearExploration, LinearSchedule
-from q_learning.linear import Linear
+from .environments.car import CarEnvironment
+from .environments.test import TestEnvironment
+from .q_learning.configs.linear import config
+from .q_learning.schedule import LinearExploration, LinearSchedule
+from .q_learning.linear import Linear
 
 
 def train_car():

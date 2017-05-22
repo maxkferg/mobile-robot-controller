@@ -1,5 +1,4 @@
 
-
 SYSFS_GPIO_DIR = "/sys/class/gpio"
 
 J21_PINS = {
@@ -67,7 +66,7 @@ class MockPin(object):
         """
         Open the GPIO pin for usage
         """
-        print "Mock: Enabled pin {0}".format(self.name)
+        print("Mock: Enabled pin {0}".format(self.name))
 
 
 
@@ -75,7 +74,7 @@ class MockPin(object):
         """
         Disable the GPIO pin
         """
-        print "Mock: Disabled pin {0}".format(self.name)
+        print("Mock: Disabled pin {0}".format(self.name))
 
 
 
@@ -84,7 +83,7 @@ class MockPin(object):
         Set the direction of the GPIO pin
         Return: Success = 0 ; otherwise open file error
         """
-        print "Mock: Set direction of pin {0}".format(self.name)
+        print("Mock: Set direction of pin {0}".format(self.name))
 
 
 
@@ -167,9 +166,9 @@ class Pin(object):
             with open(filename,'w') as buff:
                 buff.write(self.id)
         except Exception as e:
-            print "Unable to setup {0}".format(self.name)
+            print("Unable to setup {0}".format(self.name))
             raise e
-        print "Enabled pin {0}".format(self.name)
+        print("Enabled pin {0}".format(self.name))
 
 
 
@@ -183,9 +182,9 @@ class Pin(object):
             with open(filename,'w') as buff:
                 buff.write(self.id)
         except Exception as e:
-            print "Unable to disable {0}".format(self.name)
+            print("Unable to disable {0}".format(self.name))
             raise e
-        print "Disabled pin {0}".format(self.name)
+        print("Disabled pin {0}".format(self.name))
 
 
 
@@ -204,7 +203,7 @@ class Pin(object):
                 else:
                     buff.write("in")
         except Exception as e:
-            print "Unable to set GPIO direction"
+            print("Unable to set GPIO direction")
             raise e
 
 
@@ -225,7 +224,7 @@ class Pin(object):
                 else:
                     raise Exception("Pin {0} got unkown value: {1}".format(self.name, value))
         except Exception as e:
-            print "Unable to set GPIO direction"
+            print("Unable to set GPIO direction")
             raise e
 
 
@@ -245,5 +244,5 @@ class Pin(object):
                 else:
                     raise Exception("Unknown value from pin {0}: {1}".format(self.name, value)) 
         except Exception as e:
-            print "Unable to read GPIO value"
+            print("Unable to read GPIO value")
             raise e

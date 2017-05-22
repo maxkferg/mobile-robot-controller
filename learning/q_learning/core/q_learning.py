@@ -3,6 +3,7 @@ import numpy as np
 import logging
 import time
 import sys
+from builtins import range
 from collections import deque
 from ..utils.general import get_logger, Progbar, export_plot
 from ..utils.replay_buffer import ReplayBuffer
@@ -127,11 +128,11 @@ class QN(object):
         """
         self.avg_reward = np.mean(rewards)
         self.max_reward = np.max(rewards)
-        self.std_reward = np.sqrt(np.var(rewards) / len(rewards))
+        self.std_reward = np.sqrt(np.var(rewards)/len(rewards))
 
         self.max_q      = np.mean(max_q_values)
         self.avg_q      = np.mean(q_values)
-        self.std_q      = np.sqrt(np.var(q_values) / len(q_values))
+        self.std_q      = np.sqrt(np.var(q_values)/len(q_values))
 
         if len(scores_eval) > 0:
             self.eval_reward = scores_eval[-1]
@@ -307,7 +308,7 @@ class QN(object):
             rewards.append(total_reward)
 
         avg_reward = np.mean(rewards)
-        sigma_reward = np.sqrt(np.var(rewards) / len(rewards))
+        sigma_reward = np.sqrt(np.var(rewards)/len(rewards))
 
         if num_episodes > 1:
             msg = "Average reward: {:04.2f} +/- {:04.2f}".format(avg_reward, sigma_reward)

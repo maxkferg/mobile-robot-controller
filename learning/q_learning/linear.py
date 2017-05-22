@@ -1,11 +1,12 @@
 import tensorflow as tf
 import tensorflow.contrib.layers as layers
-from operator import mul
-from utils.general import get_logger
-from utils.test_env import EnvTest
-from core.deep_q_learning import DQN
-from schedule import LinearExploration, LinearSchedule
-from configs.linear import config
+from builtins import zip
+from builtins import range
+from .utils.general import get_logger
+from .utils.test_env import EnvTest
+from .core.deep_q_learning import DQN
+from .schedule import LinearExploration, LinearSchedule
+from .configs.linear import config
 
 
 class Linear(DQN):
@@ -181,14 +182,14 @@ class Linear(DQN):
         """
         optimizer = tf.train.AdamOptimizer(learning_rate=self.lr)
         variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=scope)
-        gradients, v = zip(*optimizer.compute_gradients(self.loss, variables))
+        gradients, v = list(zip(*optimizer.compute_gradients(self.loss, variables)))
 
         if self.config.grad_clip:
             gradients,_ = tf.clip_by_global_norm(gradients, self.config.clip_val)
 
         # Use the clipped gradients for optimization
         self.grad_norm = tf.global_norm(gradients)
-        self.train_op = optimizer.apply_gradients(zip(gradients, v))
+        self.train_op = optimizer.apply_gradients(list(zip(gradients, v)))
 
 
 

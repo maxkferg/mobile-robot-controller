@@ -2,12 +2,12 @@
 Measure the distance or depth with an HCSR04 Ultrasonic sound
 sensor and a Raspberry Pi.
 Imperial and Metric measurements are available"""
-
 import time
 import math
+from builtins import range
 
 
-class HCSR04(object):
+class HCSR04():
     """
     Create a measurement using a HC-SR04 Ultrasonic Sensor connected to
     the GPIO pins of a Raspberry Pi.
@@ -71,13 +71,13 @@ class HCSR04(object):
         # Check if the echo has already bounced back
         sonar_started = time.time()
         if self.echo_pin.get_value()==0:
-            print "Sonar already bounced"
+            print("Sonar already bounced")
             return 0
         # Wait for the sonar to return
         while self.echo_pin.get_value()==1:
             duration = time.time() - sonar_started
             if duration>sample_timeout:
-                print "Sonar timeout"
+                print("Sonar timeout")
                 return duration
             self.sleep_us(1000)
         # The sigal has returned
@@ -88,6 +88,6 @@ class HCSR04(object):
         """
         Sleep for @duration (us)
         """
-        return time.sleep(duration/10.0**6)
+        return time.sleep(duration/10**6)
 
 

@@ -1,16 +1,16 @@
 import os
+from .setup import basedir
 
-from setup import basedir
 
 
-class BaseConfig(object):
+class BaseConfig():
     SECRET_KEY = "SO_SECURE"
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or "sqlite:///star.db"
     SQLALCHEMY_TRACK_MODIFICATIONS = True
 
 
-class TestingConfig(object):
+class TestingConfig():
     """Development configuration."""
     TESTING = True
     DEBUG = True

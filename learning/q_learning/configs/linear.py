@@ -1,3 +1,4 @@
+
 class config():
     # env config
     render_train     = False
@@ -32,9 +33,9 @@ class config():
     state_history      = 5
     lr_begin           = 0.05
     lr_end             = 0.01
-    lr_nsteps          = nsteps_train/2
+    lr_nsteps          = nsteps_train//2
     eps_begin          = 0.1
     eps_end            = 0.01
-    eps_nsteps         = nsteps_train/2
+    eps_nsteps         = nsteps_train//2
     learning_start     = 200
 

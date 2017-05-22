@@ -1,9 +1,7 @@
-import os
+import os,time
 import numpy as np
 import tensorflow as tf
-import time
-
-from q_learning import QN
+from .q_learning import QN
 
 
 class DQN(QN):
@@ -113,9 +111,9 @@ class DQN(QN):
 
         # load the weights if we are resuming
         if self.resume:
-            print 100*"="
-            print "Loading weights from %s"%self.config.model_output
-            print 100*"="
+            print(100*"=")
+            print("Loading weights from %s"%self.config.model_output)
+            print(100*"=")
             self.saver.restore(self.sess, self.config.model_output)
 
 
@@ -164,9 +162,9 @@ class DQN(QN):
             os.makedirs(self.config.model_output)
         self.saver.save(self.sess, self.config.model_output)
 
-        print 100*"="
-        print "Saved weight to %s"%self.config.model_output
-        print 100*"="
+        print(100*"=")
+        print("Saved weight to %s"%self.config.model_output)
+        print(100*"=")
 
 
 

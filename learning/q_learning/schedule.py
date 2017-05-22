@@ -1,9 +1,10 @@
 import random
 import numpy as np
-from utils.test_env import EnvTest
+from builtins import range
+from .utils.test_env import EnvTest
 
 
-class LinearSchedule(object):
+class LinearSchedule():
     def __init__(self, eps_begin, eps_end, nsteps):
         """
         Args:
@@ -123,8 +124,8 @@ def test_update():
     # Without update
     assert schedule.epsilon == eps_begin
     # Midway point
-    schedule.update(t=nsteps/2)
-    assert schedule.epsilon == (eps_begin + eps_end)/2
+    schedule.update(t=nsteps//2)
+    assert schedule.epsilon == (eps_begin + eps_end)//2
     # End point
     schedule.update(t=nsteps)
     assert schedule.epsilon == eps_end

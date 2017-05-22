@@ -5,9 +5,9 @@
 import random
 import math
 import numpy as np
-from ..q_learning.configs.linear import config
 from hardware.car import car
-from test import ActionSpace, ObservationSpace
+from ..q_learning.configs.linear import config
+from .test import ActionSpace, ObservationSpace
 
 
 class CarEnvironment(object):

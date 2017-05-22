@@ -1,7 +1,7 @@
 import os
 import numpy as np
-from drivers.GPIO import Pin, MockPin
-from drivers.HCSR04 import HCSR04
+from .drivers.GPIO import Pin, MockPin
+from .drivers.HCSR04 import HCSR04
 
 # Change the class for development
 if os.environ.get('DEV'):
@@ -9,7 +9,7 @@ if os.environ.get('DEV'):
 
 
 
-class Sonar(object):
+class Sonar():
     """
     A sonar sensor on the Car
     """
@@ -64,6 +64,6 @@ if __name__=="__main__":
     front = FrontSonar()
     back = BackSonar()
     while True:
-        print "Front: {0}".format(front.distance())
-        print "Back: {0}".format(back.distance())
+        print("Front: {0}".format(front.distance()))
+        print("Back: {0}".format(back.distance()))
 

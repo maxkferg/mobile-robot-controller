@@ -24,7 +24,7 @@ py==1.4.31
 py-bcrypt==0.4
 pycparser==2.14
 pygame==1.9.3
-pymunk==4.0.0
+pymunk==5.2.0
 pytest==3.0.1
 pytest-cov==2.3.1
 pytest-flask==0.10.0
@@ -34,4 +34,3 @@ six==1.10.0
 SQLAlchemy==1.0.14
 Tensorflow==1.0.0
 Werkzeug==0.11.10
-flask-cors==3.0.2

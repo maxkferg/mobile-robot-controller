@@ -18,7 +18,6 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-from __future__ import division
 import logging
 import time
 import math
@@ -63,7 +62,7 @@ def software_reset(i2c=None, **kwargs):
 
 
 
-class Mock(object):
+class Mock():
     """Mock class for the PCA9685"""
 
     def __init__(self, address=PCA9685_ADDRESS, i2c=None, **kwargs):
@@ -81,7 +80,7 @@ class Mock(object):
 
 
 
-class PCA9685(object):
+class PCA9685():
     """PCA9685 PWM LED/servo controller."""
 
     def __init__(self, address=PCA9685_ADDRESS, i2c=None, **kwargs):

@@ -7,13 +7,14 @@ import math
 import numpy as np
 import pygame
 import pymunk
+from builtins import range
 from pygame.color import THECOLORS
 from pymunk.vec2d import Vec2d
-from pymunk.pygame_util import draw
+from pymunk.pygame_util import DrawOptions as draw
 from ..q_learning.configs.linear import config
 
 
-class TestEnvironment(object):
+class TestEnvironment():
     """
     Test environment
     """
@@ -228,7 +229,7 @@ class GameState(object):
 
 
     def get_reward(self,throttle,readings):
-        readings = -5 + int(self.sum_readings(readings) / 10)
+        readings = -5 + int(self.sum_readings(readings)//10)
         return 4*throttle+readings
 
 
@@ -263,7 +264,7 @@ class GameState(object):
         # Update the screen and stuff.
         self.screen.fill(THECOLORS["black"])
         draw(self.screen, self.space)
-        self.space.step(1./10)
+        self.space.step(1/10)
         if self.draw_screen:
             pygame.display.flip()
         self.clock.tick()
@@ -281,7 +282,7 @@ class GameState(object):
             done = True
         else:
             # Higher readings are better, so return the sum.
-            reward = -5 + int(self.sum_readings(readings) / 10)
+            reward = -5 + self.sum_readings(readings)/10
             done = False
         self.num_steps += 1
 
