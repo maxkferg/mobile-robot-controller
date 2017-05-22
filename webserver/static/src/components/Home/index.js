@@ -33,6 +33,13 @@ mutation Car($left: Float, $right: Float, $accelerate: Float, $decelerate: Float
 @graphql(CarMutation)
 export class Dashboard extends Component {
 
+  train = () => {
+    this.props.mutate({
+      update: this.update,
+      variables: {train: true}
+    });
+  }
+
   reset = () => {
     this.props.mutate({
       update: this.update,
@@ -100,7 +107,11 @@ export class Dashboard extends Component {
             <div>
                 <RaisedButton label="Reset" primary={true} style={style} onClick={this.reset} />
             </div>
-        </div>  
+            <h1>Train</h1>
+            <div>
+                <RaisedButton label="Train" secondary={true} style={style} onClick={this.train} />
+            </div>
+        </div>
     );
   }
 }

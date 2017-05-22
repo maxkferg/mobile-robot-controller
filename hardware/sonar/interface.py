@@ -1,6 +1,12 @@
+import os
 import numpy as np
-from drivers.GPIO import Pin
+from drivers.GPIO import Pin, MockPin
 from drivers.HCSR04 import HCSR04
+
+# Change the class for development
+if os.environ.get('DEV'):
+    Pin = MockPin
+
 
 
 class Sonar(object):
@@ -23,8 +29,7 @@ class Sonar(object):
         Takes 11 sensor readings and returns the result
         If the distance is too large, the maximum is returned
         """
-        return self.sensor.distance_metric()
-        
+        return self.sensor.distance_cm()
 
 
 
@@ -34,7 +39,7 @@ class FrontSonar(Sonar):
     """
     # Input - J21 - Pin 31 - GPIO11_AP_WAKE_BT
     echo_port = "J21"
-    echo_pin = "33" 
+    echo_pin = "33"
     # Output - J21 - Pin 37 - GPIO8_ALS_PROX_INT
     trigger_port = "J21"
     trigger_pin = "37"
@@ -47,15 +52,15 @@ class RearSonar(Sonar):
     """
     # Input - J21 - Pin 31 - GPIO9_MOTION_INT
     echo_port = "J21"
-    echo_pin = "31" 
+    echo_pin = "31"
     # Output - J21 - Pin 29 - GPIO19_AUD_RST
-    tirgger_port = "J21"
+    trigger_port = "J21"
     trigger_pin = "29"
 
 
 
 if __name__=="__main__":
-    command = None 
+    command = None
     front = FrontSonar()
     back = BackSonar()
     while True:

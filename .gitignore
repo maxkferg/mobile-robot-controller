@@ -1,3 +1,5 @@
 
 *.pyc
-learning/example/saved_models/
+learning/results/q_learning/linear/*.txt
+learning/results/q_learning/linear/events.out.tfevents*
+learning/results/q_learning/car/events.out.tfevents*

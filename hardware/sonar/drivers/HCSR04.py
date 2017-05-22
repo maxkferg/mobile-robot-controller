@@ -1,6 +1,6 @@
 """
-Measure the distance or depth with an HCSR04 Ultrasonic sound 
-sensor and a Raspberry Pi.  
+Measure the distance or depth with an HCSR04 Ultrasonic sound
+sensor and a Raspberry Pi.
 Imperial and Metric measurements are available"""
 
 import time
@@ -9,7 +9,7 @@ import math
 
 class HCSR04(object):
     """
-    Create a measurement using a HC-SR04 Ultrasonic Sensor connected to 
+    Create a measurement using a HC-SR04 Ultrasonic Sensor connected to
     the GPIO pins of a Raspberry Pi.
     Metric values are used by default. For imperial values use
     unit='imperial'
@@ -22,44 +22,44 @@ class HCSR04(object):
         self.echo_pin = echo_pin
         self.temperature = temperature
 
-    def raw_distance(self, sample_size=11, sample_wait=0.1):
+    def distance_cm(self, sample_size=11, sample_wait=0.1):
         """
-        Return an error corrected unrounded distance, in cm, of an object 
+        Return an error corrected unrounded distance, in cm, of an object
         adjusted for temperature in Celcius.  The distance calculated
         is the median value of a sample of `sample_size` readings.
-        
+
         Speed of readings is a result of two variables.  The sample_size
         per reading and the sample_wait (interval between individual samples).
-        Example: To use a sample size of 5 instead of 11 will increase the 
+        Example: To use a sample size of 5 instead of 11 will increase the
         speed of your reading but could increase variance in readings;
         value = sensor.Measurement(trig_pin, echo_pin)
         r = value.raw_distance(sample_size=5)
-        
+
         Adjusting the interval between individual samples can also
         increase the speed of the reading.  Increasing the speed will also
         increase CPU usage.  Setting it too low will cause errors.  A default
-        of sample_wait=0.1 is a good balance between speed and minimizing 
+        of sample_wait=0.1 is a good balance between speed and minimizing
         CPU usage.  It is also a safe setting that should not cause errors.
-        
+
         e.g.
         r = value.raw_distance(sample_wait=0.03)
         """
 
         speed_of_sound = 331.3 * math.sqrt(1+(self.temperature / 273.15))
-        sample_timeout = max_distance_cm / speed_of_sound / 100
+        sample_timeout = self.max_distance_cm / speed_of_sound / 100
         sample = []
 
         for distance_reading in range(sample_size):
-            time_passed = self.take_sample(sample_timeout)
+            time_passed = self.take_sample(sample_wait,sample_timeout)
             distance_cm = time_passed * ((speed_of_sound * 100) / 2)
             sample.append(distance_cm)
         sorted_sample = sorted(sample)
         return sorted_sample[sample_size // 2]
 
 
-    def take_sample(sample_timeout):
+    def take_sample(self,sample_wait,sample_timeout):
         """
-        Take a sonar reading 
+        Take a sonar reading
         Return the time required for the echo to bounce, or timeout
         Return 0 if the signal bounces back immediately
         """

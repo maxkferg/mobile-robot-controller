@@ -66,8 +66,9 @@ def software_reset(i2c=None, **kwargs):
 class Mock(object):
     """Mock class for the PCA9685"""
 
-    def __init__(self, address=PCA9685_ADDRESS, i2c=None):
-        pass
+    def __init__(self, address=PCA9685_ADDRESS, i2c=None, **kwargs):
+        if kwargs.get('busnum'):
+            print("Mock: Using I2C bus {busnum}".format(kwargs))
 
     def set_pwm_freq(self, freq_hz):
         print("Mock: Set PWM frequency to {0} Hz".format(freq_hz))

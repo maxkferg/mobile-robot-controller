@@ -1,7 +1,6 @@
 import graphene
-from hardware.motors import steering as steering_controller
-from hardware.motors import throttle as throttle_controller
-
+from hardware.car import car as hw
+from learning.train import train_car
 
 
 class CarState(graphene.ObjectType):
@@ -11,8 +10,8 @@ class CarState(graphene.ObjectType):
 
     def __init__(self, *args, **kwargs):
         super(CarState, self).__init__(*args,**kwargs)
-        self.rotation = steering_controller.get_rotation()
-        self.throttle = throttle_controller.get_throttle()
+        self.rotation = hw.steering.get_rotation()
+        self.throttle = hw.throttle.get_throttle()
 
 
 class CarMutation(graphene.Mutation):
@@ -24,6 +23,7 @@ class CarMutation(graphene.Mutation):
         accelerate = graphene.Float()
         decelerate = graphene.Float()
         reset = graphene.Boolean()
+        train = graphene.Boolean()
 
     car = graphene.Field(lambda: CarState)
 
@@ -34,20 +34,21 @@ class CarMutation(graphene.Mutation):
         accelerate = args.get('accelerate')
         decelerate = args.get('decelerate')
         reset = args.get('reset')
-        
-        if reset:
-            steering_controller.reset()
-            throttle_controller.reset()
-        if left:
-            steering_controller.turn_left(left)
-        if right:
-            steering_controller.turn_right(right)
-        if accelerate:
-            throttle_controller.accelerate(accelerate)
-        if decelerate:
-            throttle_controller.decelerate(decelerate)
-        return CarMutation(car=CarState())
+        train = args.get('train')
 
+        if train:
+            train_car()
+        if reset:
+            hw.reset()
+        if left:
+            hw.steering.turn_left(left)
+        if right:
+            hw.steering.turn_right(right)
+        if accelerate:
+            hw.throttle.accelerate(accelerate)
+        if decelerate:
+            hw.throttle.decelerate(decelerate)
+        return CarMutation(car=CarState())
 
 
 
@@ -66,10 +67,10 @@ class Query(graphene.ObjectType):
         return 'World'
 
     def resolve_thottle(self, args, context, info):
-        return throttle.get_throttle()
+        return hw.throttle.get_throttle()
 
     def resolve_steering(self, args, context, info):
-        return steering.get_rotation()
+        return hw.steering.get_rotation()
 
     def resolve_car(self, args, context, info):
         return CarState()

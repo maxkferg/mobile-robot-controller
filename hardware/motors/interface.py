@@ -1,12 +1,10 @@
 import os,time
-from drivers import PCA9685
+from drivers import Mock,PCA9685
 
-BUSNUM=0
 
 if os.environ.get('DEV'):
-    CONTROLLER = PCA9685l.Mock()
-else:
-    CONTROLLER = PCA9685.PCA9685(busnum=BUSNUM)
+    PCA9685 = Mock
+
 
 class PWM(object):
     """
@@ -15,13 +13,13 @@ class PWM(object):
     frequency = 100 # Hz
     resolution = 4096 # Bits
 
-    def __init__(self, channel):
+    def __init__(self, i2cbus, channel):
         """
         Initialize the hardware
         """
         self.channel = channel
         self.pulse_length = 0
-        self.controller = CONTROLLER
+        self.controller = PCA9685(busnum=i2cbus)
         self.controller.set_pwm_freq(self.frequency)
 
     def set_pulse_length(self, length):
@@ -29,7 +27,7 @@ class PWM(object):
         Set the length of the PWM pulse length (in ms)
         """
         print('{0}: changing pulse length to {1} ms'.format(self,length))
-        total_period = 1000.0 / self.frequency 
+        total_period = 1000.0 / self.frequency
         pulse_bits = int(self.resolution * length / total_period)
         print('{0}: changing pulse length to {1}/{2} bits'.format(self, pulse_bits, self.resolution))
         self.controller.set_pwm(self.channel, 0, pulse_bits)
@@ -52,6 +50,7 @@ class Steering(PWM):
      * 0.5 straight
      * 1.0 right turn
     """
+    i2cbus = 0 # I2C bus 0
     channel = 7 # PWM channel 7
     min_rotation = -1.0
     max_rotation = 1.0
@@ -64,7 +63,7 @@ class Steering(PWM):
         """
         Intialize the hardware and turn the wheels to the default position
         """
-        super(Steering, self).__init__(self.channel)
+        super(Steering, self).__init__(self.i2cbus, self.channel)
         self.rotation = self.default_rotation
         self.reset() # set the PWM to match default_rotation
 
@@ -106,7 +105,7 @@ class Steering(PWM):
     def update_rotation(self,amount):
         """
         Rotate the car steering system by @amount. Return the current rotation
-        
+
         A negative amount corroponds to a left turn.
         We deliberately prevent the AI from setting the actual angle, to avoid
         very rapid changes in angle.
@@ -133,6 +132,7 @@ class Throttle(PWM):
      * 0.5 stationary
      * 1.0 right turn
     """
+    i2cbus = 0 # I2C bus 0
     channel = 6 # PWM channel 6
     min_throttle = -1.0
     max_throttle = 1.0
@@ -145,7 +145,7 @@ class Throttle(PWM):
         """
         Intialize the hardware and turn the wheels to the default position
         """
-        super(self.__class__, self).__init__(self.channel)
+        super(self.__class__, self).__init__(self.i2cbus, self.channel)
         self.throttle = self.default_throttle
         self.reset() # set the PWM to match default_rotation
 
@@ -207,7 +207,7 @@ class Throttle(PWM):
         pwm_stall_max = 1.65 # ms
         pwm_stopped = 1.50 # ms
         if pwm_stall_min < pulse and pulse < pwm_stall_max:
-            pulse = pwm_stopped 
+            pulse = pwm_stopped
         assert pulse >= self.pwm_min_pulse # Sanity check
         assert pulse <= self.pwm_max_pulse # Sanity check
         return pulse
@@ -216,7 +216,7 @@ class Throttle(PWM):
     def update_thottle(self,amount):
         """
         Update the throttle of the main motor by @amount
-        
+
         A negative amount corroponds to a left turn.
         We deliberately prevent the AI from setting the actual angle, to avoid
         very rapid changes in angle.
@@ -241,7 +241,7 @@ if __name__=='__main__':
     print('--------------- backwards ---------------')
     for i in range(10):
         throttle.decelerate(amount=0.1)
-    
+
     # Accelerate forwards
     print('--------------- forwards ---------------')
     for i in range(20):
@@ -265,8 +265,6 @@ if __name__=='__main__':
     print('--------------- reset ---------------')
     steering.reset()
 
-
-    
 
 
 
