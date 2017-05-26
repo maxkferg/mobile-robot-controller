@@ -133,7 +133,7 @@ class Pin(object):
         self.set_direction(is_out)
 
 
-    def __del__(self):
+    def __exit__(self):
         """
         Disable the pin
         """
@@ -167,7 +167,6 @@ class Pin(object):
                 buff.write(self.id)
         except Exception as e:
             print("Unable to setup {0}".format(self.name))
-            raise e
         print("Enabled pin {0}".format(self.name))
 
 
