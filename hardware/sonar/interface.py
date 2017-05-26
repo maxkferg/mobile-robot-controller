@@ -29,7 +29,9 @@ class Sonar():
         Takes 11 sensor readings and returns the result
         If the distance is too large, the maximum is returned
         """
-        return self.sensor.distance_cm()
+        distance = self.sensor.distance_cm()
+        print("{0} distance = {1:.2f} cm".format(self.sensor_name, distance))
+        return distance
 
 
 
@@ -43,6 +45,7 @@ class FrontSonar(Sonar):
     # Output - J21 - Pin 37 - GPIO8_ALS_PROX_INT
     trigger_port = "J21"
     trigger_pin = "37"
+    sensor_name = "FrontSonar"
 
 
 
@@ -56,6 +59,7 @@ class RearSonar(Sonar):
     # Output - J21 - Pin 29 - GPIO19_AUD_RST
     trigger_port = "J21"
     trigger_pin = "29"
+    sensor_name = "RearSonar"
 
 
 

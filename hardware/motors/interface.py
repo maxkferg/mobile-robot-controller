@@ -113,6 +113,7 @@ class Steering(PWM):
         self.rotation += amount
         self.rotation = max(self.rotation, self.min_rotation)
         self.rotation = min(self.rotation, self.max_rotation)
+        print('{0}: changing steering to {1}'.format(self,self.rotation))
         gradient = (self.pwm_max_pulse - self.pwm_min_pulse)/(self.max_rotation - self.min_rotation)
         pulse = self.rotation*gradient + self.pwm_min_pulse - gradient*self.min_rotation
         assert pulse >= self.pwm_min_pulse
@@ -218,10 +219,11 @@ class Throttle(PWM):
         Update the throttle of the main motor by @amount
 
         A negative amount corroponds to a left turn.
-        We deliberately prevent the AI from setting the actual angle, to avoid
-        very rapid changes in angle.
+        We deliberately prevent the AI from setting the actual throttle, to avoid
+        very rapid changes.
         """
         self.throttle = self.limit_throttle(self.throttle+amount)
+        print('{0}: changing throttle to {1}'.format(self,self.throttle))
         gradient = (self.pwm_max_pulse - self.pwm_min_pulse)/(self.max_throttle - self.min_throttle)
         pulse = self.throttle * gradient + self.pwm_min_pulse - gradient*self.min_throttle
         pulse = self.limit_pwm(pulse)
