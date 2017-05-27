@@ -18,8 +18,8 @@ query Car {
 
 
 const CarMutation = gql`
-mutation Car($left: Float, $right: Float, $accelerate: Float, $decelerate: Float, $reset: Boolean) {
-  controlCar(left: $left, right: $right, accelerate: $accelerate, decelerate: $decelerate, reset: $reset) {
+mutation Car($left: Float, $right: Float, $accelerate: Float, $decelerate: Float, $reset: Boolean, $train: Boolean) {
+  controlCar(left: $left, right: $right, accelerate: $accelerate, decelerate: $decelerate, reset: $reset, train: $train) {
     car {
       rotation
       throttle

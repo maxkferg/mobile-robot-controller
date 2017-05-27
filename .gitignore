@@ -3,6 +3,4 @@
 learning/results/q_learning/linear/*.txt
 learning/results/q_learning/linear/events.out.tfevents*
 learning/results/q_learning/car/events.out.tfevents*
-*.py
-
--Max’s MacBook Pro.gitignore
+learning/results/q_learning/car/log.txt

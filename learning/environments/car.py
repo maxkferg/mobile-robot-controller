@@ -12,7 +12,8 @@ from .test import ActionSpace, ObservationSpace
 
 class CarEnvironment(object):
     """
-    Test         if action == 0:  # Left
+    Test         
+        if action == 0:  # Left
             self.rotation = -0.2
             self.throttle = 0
 
@@ -113,11 +114,11 @@ class CarEnvironment(object):
         Apply a particular action on the real car
         """
         if action == 0:  # Left
-            rotation = -0.2
+            rotation = -0.4
             throttle = 0
 
         elif action == 1:  # Right
-            rotation = 0.2
+            rotation = 0.4
             throttle = 0
 
         elif action == 2:  # Forward
