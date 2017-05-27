@@ -204,7 +204,7 @@ class Throttle(PWM):
         Return the new limited PWM
         Certain PWM frequencies will cause damage, so we block them
         """
-        pwm_stall_min = 1.35 # ms
+        pwm_stall_min = 1.50 # ms
         pwm_stall_max = 1.65 # ms
         pwm_stopped = 1.50 # ms
         if pwm_stall_min < pulse and pulse < pwm_stall_max:
@@ -222,6 +222,17 @@ class Throttle(PWM):
         We deliberately prevent the AI from setting the actual throttle, to avoid
         very rapid changes.
         """
+        if self.throttle>0 and -amount>self.throttle:
+	    self.throttle = 0
+            while self.throttle>-0.6:
+                self.update_throttle(-0.01)
+                time.sleep(0.01)
+            while self.throttle<0:
+                self.update_throttle(0.01)
+                time.sleep(0.01)
+            while self.throttle>amount:
+                self.update_throttle(0.01)
+                time.sleep(0.01)
         self.throttle = self.limit_throttle(self.throttle+amount)
         print('{0}: changing throttle to {1}'.format(self,self.throttle))
         gradient = (self.pwm_max_pulse - self.pwm_min_pulse)/(self.max_throttle - self.min_throttle)
