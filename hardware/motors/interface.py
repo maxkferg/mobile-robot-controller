@@ -1,4 +1,5 @@
 import os,time
+import numpy as np
 from builtins import range
 from .drivers import Mock,PCA9685
 
@@ -78,21 +79,21 @@ class Steering(PWM):
         """
         Turn the car left by @amount
         """
-        return self.update_rotation(-amount)
+        return self.set_rotation(-amount)
 
 
     def turn_right(self,amount=0.1):
         """
         Turn the car right by @amount
         """
-        return self.update_rotation(amount)
+        return self.set_rotation(amount)
 
 
     def reset(self):
         """
         Return to the default throttle position
         """
-        self.update_rotation(self.default_rotation-self.rotation)
+        self.set_rotation(self.default_rotation)
 
 
     def get_rotation(self):
@@ -102,7 +103,7 @@ class Steering(PWM):
         return self.rotation
 
 
-    def update_rotation(self,amount):
+    def set_rotation(self,rotation):
         """
         Rotate the car steering system by @amount. Return the current rotation
 
@@ -110,7 +111,7 @@ class Steering(PWM):
         We deliberately prevent the AI from setting the actual angle, to avoid
         very rapid changes in angle.
         """
-        self.rotation += amount
+        self.rotation = rotation
         self.rotation = max(self.rotation, self.min_rotation)
         self.rotation = min(self.rotation, self.max_rotation)
         print('{0}: changing steering to {1}'.format(self,self.rotation))
@@ -156,25 +157,11 @@ class Throttle(PWM):
         return "Throttle ({0})".format(self.channel)
 
 
-    def accelerate(self,amount=0.1):
-        """
-        Slow the car by @amount
-        """
-        self.update_thottle(amount)
-
-
-    def decelerate(self,amount=0.1):
-        """
-        Accelerate the car by @amount
-        """
-        self.update_thottle(-amount)
-
-
     def reset(self):
         """
         Return to the default throttle position
         """
-        self.update_thottle(self.default_throttle-self.throttle)
+        self.set_throttle(self.default_throttle)
 
 
     def get_throttle(self):
@@ -184,7 +171,37 @@ class Throttle(PWM):
         return self.throttle
 
 
-    def limit_throttle(self,speed):
+    def set_throttle(self,speed):
+        """
+        Update the throttle of the main motor by @amount
+
+        A negative amount corroponds to a left turn.
+        We deliberately prevent the AI from setting the actual throttle, to avoid
+        very rapid changes.
+        """
+        speed = self._limit_throttle(speed)
+        print('{0}: changing throttle to {1}'.format(self,speed))
+        if self.throttle>=0 and -speed>self.throttle:
+            return self._engage_reverse(speed)
+        return self._set_throttle( speed)
+
+
+    def _engage_reverse(self,speed):
+        """
+        Put the car into reverse mode
+        """
+        for i in np.linspace(0, -0.6, 20): 
+            self._set_throttle(i)
+            time.sleep(0.01)
+        for i in np.linspace(-0.6, 0, 20):
+            self._set_throttle(i)
+            time.sleep(0.01)
+        for i in np.linspace(0, speed, 20):
+            self._set_throttle(i)
+            time.sleep(0.01)
+
+
+    def _limit_throttle(self,speed):
         """
         Return the new (limited) speed
         """
@@ -199,7 +216,7 @@ class Throttle(PWM):
         return speed
 
 
-    def limit_pwm(self,pulse):
+    def _limit_pwm(self,pulse):
         """
         Return the new limited PWM
         Certain PWM frequencies will cause damage, so we block them
@@ -214,34 +231,16 @@ class Throttle(PWM):
         return pulse
 
 
-    def update_thottle(self,amount):
+    def _set_throttle(self,speed):
         """
-        Update the throttle of the main motor by @amount
-
-        A negative amount corroponds to a left turn.
-        We deliberately prevent the AI from setting the actual throttle, to avoid
-        very rapid changes.
+        Set the throttle without any safety checks
         """
-        if self.throttle>0 and -amount>self.throttle:
-	    self.throttle = 0
-            while self.throttle>-0.6:
-                self.update_throttle(-0.01)
-                time.sleep(0.01)
-            while self.throttle<0:
-                self.update_throttle(0.01)
-                time.sleep(0.01)
-            while self.throttle>amount:
-                self.update_throttle(0.01)
-                time.sleep(0.01)
-        self.throttle = self.limit_throttle(self.throttle+amount)
-        print('{0}: changing throttle to {1}'.format(self,self.throttle))
+        self.throttle = speed
         gradient = (self.pwm_max_pulse - self.pwm_min_pulse)/(self.max_throttle - self.min_throttle)
         pulse = self.throttle * gradient + self.pwm_min_pulse - gradient*self.min_throttle
-        pulse = self.limit_pwm(pulse)
+        pulse = self._limit_pwm(pulse)
         self.set_pulse_length(pulse)
         return self.throttle
-
-
 
 
 

@@ -18,8 +18,8 @@ query Car {
 
 
 const CarMutation = gql`
-mutation Car($left: Float, $right: Float, $accelerate: Float, $decelerate: Float, $reset: Boolean, $train: Boolean) {
-  controlCar(left: $left, right: $right, accelerate: $accelerate, decelerate: $decelerate, reset: $reset, train: $train) {
+mutation Car($left: Float, $right: Float, $throttle: Float, $reset: Boolean, $train: Boolean) {
+  controlCar(left: $left, right: $right, throttle: $throttle, reset: $reset, train: $train) {
     car {
       rotation
       throttle
@@ -50,14 +50,18 @@ export class Dashboard extends Component {
   accelerate = () => {
     this.props.mutate({
       update: this.update,
-      variables: { accelerate: 0.1}
+      variables: { throttle: 
+        this.props.data.car.throttle + 0.1
+      }
     });
   }
 
   decelerate = () => {
     this.props.mutate({
       update: this.update,
-      variables: {decelerate: 0.1}
+      variables: { throttle: 
+        this.props.data.car.throttle - 0.1
+      }
     });
   }
 

@@ -129,6 +129,6 @@ class CarEnvironment(object):
             throttle = -0.4
             rotation = 0
 
-        car.steering.update_rotation(rotation)
-        car.throttle.update_thottle(throttle)
+        car.steering.set_rotation(rotation)
+        car.throttle.set_thottle(throttle)
 

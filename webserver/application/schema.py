@@ -20,8 +20,7 @@ class CarMutation(graphene.Mutation):
     class Input():
         left = graphene.Float()
         right = graphene.Float()
-        accelerate = graphene.Float()
-        decelerate = graphene.Float()
+        throttle = graphene.Float()
         reset = graphene.Boolean()
         train = graphene.Boolean()
 
@@ -31,8 +30,7 @@ class CarMutation(graphene.Mutation):
     def mutate(root, args, context, info):
         left = args.get('left')
         right = args.get('right')
-        accelerate = args.get('accelerate')
-        decelerate = args.get('decelerate')
+        throttle = args.get('throttle')
         reset = args.get('reset')
         train = args.get('train')
 
@@ -44,10 +42,8 @@ class CarMutation(graphene.Mutation):
             hw.steering.turn_left(left)
         if right:
             hw.steering.turn_right(right)
-        if accelerate:
-            hw.throttle.accelerate(accelerate)
-        if decelerate:
-            hw.throttle.decelerate(decelerate)
+        if throttle:
+            hw.throttle.set_throttle(throttle)
         return CarMutation(car=CarState())
 
 
