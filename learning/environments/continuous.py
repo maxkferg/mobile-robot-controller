@@ -7,32 +7,40 @@ import math
 import numpy as np
 import pygame
 import pymunk
+import pymunk.pygame_util
 from builtins import range
 from pygame.color import THECOLORS
 from pymunk.vec2d import Vec2d
-from pymunk.pygame_util import DrawOptions as draw
-from ..q_learning.configs.linear import config
+from ..sarsa.configs.linear import config
 
 
-class TestEnvironment():
+class ContinuousEnvironment:
     """
-    Test environment
+    Continuous Test environment
     """
     crash_distance = 10
 
-    def __init__(self,draw):
+    def __init__(self, render=False, seed=0):
         self.steps = 0
         self.resets = 0
-        self.state = GameState(draw)
+        self.random_seed = seed
+        self.state = GameState(render=True)
         self.action_space = ActionSpace()
         self.observation_space = ObservationSpace()
 
         # Init PyGame
+    def seed(self,seed):
+        """
+        Set the environment seed
+        """
+        self.random_seed = seed
+
 
     def render(self):
         """
         Render the environment
         """
+        print("Rendering")
         pygame.display.flip()
 
 
@@ -74,25 +82,27 @@ class TestEnvironment():
 
 
 
-class ActionSpace(object):
+class ActionSpace:
     """
     Represents the actions which can be taken
     """
-    n = 4
+    low = -1.0
+    high = 1.0
+    shape = (2,1)
 
     def sample(self):
-        return random.randint(0,self.n-1)
+        return np.random.uniform(low=0.0, high=1.0, size=self.shape)
 
 
 class ObservationSpace(object):
     """
     Represents the observations which can be made
     """
-    shape = (1,4)
+    shape = (4,1)
 
 
 
-class GameState(object):
+class GameState:
     """
     Simulated game environment
     Renders the game using PyGame
@@ -103,7 +113,7 @@ class GameState(object):
     sonar_scale = 10
     crash_distance = 2
 
-    def __init__(self,draw=False):
+    def __init__(self, render=False):
         # Start pygame
         self.init_pygame()
 
@@ -111,8 +121,8 @@ class GameState(object):
         self.crashed = False
 
         # Drawing
-        self.show_sensors = draw
-        self.draw_screen = draw
+        self.show_sensors = render
+        self.draw_screen = render
 
         # Physics stuff.
         self.space = pymunk.Space()
@@ -128,6 +138,8 @@ class GameState(object):
         self.num_steps = 0
 
         # Create walls.
+        height = self.env_height
+        width = self.env_width
         static = [
             pymunk.Segment(
                 self.space.static_body,
@@ -158,16 +170,25 @@ class GameState(object):
         # Create a cat.
         self.create_cat()
 
+
     def init_pygame(self):
         # PyGame init
         pygame.init()
         self.screen = pygame.display.set_mode((self.env_width, self.env_height))
         self.clock = pygame.time.Clock()
         self.screen.set_alpha(None)
+        #while True:
+        #    pygame.display.update()
+        pymunk.pygame_util.positive_y_is_up = False
+        self.draw_options = pymunk.pygame_util.DrawOptions(self.screen)
+
 
 
     def create_obstacle(self, x, y, r):
-        c_body = pymunk.Body(pymunk.inf, pymunk.inf)
+        """
+        Create an obstacle in the environment
+        """
+        c_body = pymunk.Body(body_type=pymunk.Body.STATIC)
         c_shape = pymunk.Circle(c_body, r)
         c_shape.elasticity = 1.0
         c_body.position = x, y
@@ -177,9 +198,12 @@ class GameState(object):
 
 
     def create_cat(self):
+        """
+        Create an moving obstacle in the environment
+        """
         inertia = pymunk.moment_for_circle(1, 0, 14, (0, 0))
         self.cat_body = pymunk.Body(1, inertia)
-        self.cat_body.position = 50, height - 100
+        self.cat_body.position = 50, self.env_height - 100
         self.cat_shape = pymunk.Circle(self.cat_body, 30)
         self.cat_shape.color = THECOLORS["orange"]
         self.cat_shape.elasticity = 1.0
@@ -189,6 +213,9 @@ class GameState(object):
 
 
     def create_car(self, x, y, r):
+        """
+        Create a siumlated representation of the car
+        """
         inertia = pymunk.moment_for_circle(1, 0, 14, (0, 0))
         self.car_body = pymunk.Body(1, inertia)
         self.position = x, y
@@ -198,17 +225,16 @@ class GameState(object):
         self.car_body.angle = r
         self.car_body.friction = 0.01
         driving_direction = Vec2d(1, 0).rotated(self.car_body.angle)
-        self.car_body.apply_impulse(driving_direction)
+        self.car_body.apply_impulse_at_local_point(driving_direction)
         self.space.add(self.car_body, self.car_shape)
 
 
-    def turn(self,amount):
+    def turn(self,rotation):
         """
-        Turn the steeing left or right
+        Turn the steering to @rotation
         """
         noise = 0.05*(random.random()-0.5)
-        self.steering += amount
-        self.steering += noise
+        self.steering = rotation + noise
         self.steering = min(self.steering,+0.6)
         self.steering = max(self.steering,-0.6)
 
@@ -218,8 +244,9 @@ class GameState(object):
         Drive the car forward or backward
         """
         driving_direction = self.get_driving_direction()
-        self.car_body.velocity = 1000 * driving_direction * throttle
+        self.car_body.velocity = 1000 * throttle * driving_direction
         self.car_body.angle += throttle*self.steering # Update angle
+
 
     def get_driving_direction(self):
         """
@@ -229,27 +256,16 @@ class GameState(object):
 
 
     def get_reward(self,throttle,readings):
+        """
+        Calculate the reward for the most recent action
+        """
         readings = -5 + int(self.sum_readings(readings)//10)
         return 4*throttle+readings
 
 
     def frame_step(self, action):
-        if action == 0:  # Left
-            self.rotation = -0.2
-            self.throttle = 0
-
-        elif action == 1:  # Right
-            self.rotation = 0.2
-            self.throttle = 0
-
-        elif action == 2:  # Forward
-            self.rotation = 0
-            self.throttle = 0.4
-
-        elif action == 3:  # Backward
-            self.throttle = -0.4
-            self.rotation = 0
-
+        self.rotation = action[0]
+        self.throttle = action[1]
         self.turn(self.rotation)
         self.drive(self.throttle)
 
@@ -263,9 +279,10 @@ class GameState(object):
 
         # Update the screen and stuff.
         self.screen.fill(THECOLORS["black"])
-        draw(self.screen, self.space)
+        #self.space.debug_draw(self.draw_options)
         self.space.step(1/10)
         if self.draw_screen:
+            print('rendering...')
             pygame.display.flip()
         self.clock.tick()
 
@@ -290,7 +307,9 @@ class GameState(object):
 
 
     def move_obstacles(self):
-        # Randomly move obstacles around.
+        """
+        Randomly move obstacles around.
+        """
         for obstacle in self.obstacles:
             speed = random.randint(1, 5)
             direction = Vec2d(1, 0).rotated(self.car_body.angle + random.randint(-2, 2))
@@ -298,6 +317,9 @@ class GameState(object):
 
 
     def move_cat(self):
+        """
+        Randomly move cat around.
+        """
         speed = random.randint(10, 20)
         self.cat_body.angle -= random.randint(-1, 1)
         direction = Vec2d(1, 0).rotated(self.cat_body.angle)
@@ -305,6 +327,9 @@ class GameState(object):
 
 
     def car_is_crashed(self, readings):
+        """
+        Return true if the car has crashed
+        """
         threshold = self.crash_distance * self.sonar_scale
         if readings[0] <= threshold or readings[1] <= threshold:
             return True
@@ -317,17 +342,20 @@ class GameState(object):
         """
         driving_direction = self.get_driving_direction()
         x,y = self.car_body.position
-        if x<0 or y<0 or x>width or y>height:
+        if x<0 or y<0 or x>self.env_width or y>self.env_height:
             self.car_body.position.x = 200
             self.car_body.position.y = 200
         self.crashed = False
         for i in range(10):
             self.screen.fill(THECOLORS["red"])
-            draw(self.screen, self.space)
+            #self.space.debug_draw(self.draw_options)
+            pygame.display.update()
 
 
     def sum_readings(self, readings):
-        """Sum the number of non-zero readings."""
+        """
+        Sum the number of non-zero readings.
+        """
         tot = 0
         for i in readings:
             tot += i
@@ -335,7 +363,6 @@ class GameState(object):
 
 
     def get_sonar_readings(self, x, y, angle):
-        readings = []
         """
         Instead of using a grid of boolean(ish) sensors, sonar readings
         simply return N "distance" readings, one for each sonar
@@ -343,7 +370,7 @@ class GameState(object):
         reading starting at the object. For instance, if the fifth sensor
         in a sonar "arm" is non-zero, then that arm returns a distance of 5.
         """
-        # Make our arms.
+        readings = []
         arm_front = self.make_sonar_arm(x, y)
         arm_rear = arm_front
 
@@ -361,6 +388,9 @@ class GameState(object):
 
 
     def get_arm_distance(self, arm, x, y, angle, offset):
+        """
+        Get the distance reading from a sonar arm
+        """
         # Used to count the distance.
         i = 0
 
@@ -376,7 +406,7 @@ class GameState(object):
             # Check if we've hit something. Return the current i (distance)
             # if we did.
             if rotated_p[0] <= 0 or rotated_p[1] <= 0 \
-                    or rotated_p[0] >= width or rotated_p[1] >= height:
+                    or rotated_p[0] >= self.env_width or rotated_p[1] >= self.env_height:
                 return i  # Sensor is off the screen.
             else:
                 obs = self.screen.get_at(rotated_p)
@@ -391,6 +421,9 @@ class GameState(object):
 
 
     def make_sonar_arm(self, x, y):
+        """
+        Make a sonar arm
+        """
         spread = 10  # Default spread.
         distance = 20  # Gap before first sensor.
         arm_points = []
@@ -403,17 +436,22 @@ class GameState(object):
 
 
     def get_rotated_point(self, x_1, y_1, x_2, y_2, radians):
-        # Rotate x_2, y_2 around x_1, y_1 by angle.
+        """
+        Rotate x_2, y_2 around x_1, y_1 by angle.
+        """
         x_change = (x_2 - x_1) * math.cos(radians) + \
             (y_2 - y_1) * math.sin(radians)
         y_change = (y_1 - y_2) * math.cos(radians) - \
             (x_1 - x_2) * math.sin(radians)
         new_x = x_change + x_1
-        new_y = height - (y_change + y_1)
+        new_y = self.env_height - (y_change + y_1)
         return int(new_x), int(new_y)
 
 
     def get_track_or_not(self, reading):
+        """
+        Return whether an object is tracked
+        """
         if reading == THECOLORS['black']:
             return 0
         else:

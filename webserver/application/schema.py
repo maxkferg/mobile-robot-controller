@@ -1,6 +1,6 @@
 import graphene
 from hardware.car import car as hw
-from learning.train import train_car
+from learning.train import train_car_ddpg
 
 
 class CarState(graphene.ObjectType):

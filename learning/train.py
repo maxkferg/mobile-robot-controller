@@ -1,14 +1,18 @@
 import argparse
 import tensorflow as tf
-from .environments.car import CarEnvironment
-from .environments.test import TestEnvironment
-from .q_learning.configs.linear import config
-from .q_learning.schedule import LinearExploration, LinearSchedule
-from .q_learning.linear import Linear
+#from .environments.real import RealEnvironment
+#from .environments.simulated import SimulatedEnvironment
+from .sarsa.schedule import LinearExploration, LinearSchedule
+from .sarsa.linear import Linear
+from .ddpg import DDPG
 
 
-def train_car():
-    env = CarEnvironment()
+def train_car_sarsa():
+    """
+    Train a q-learning agent using the simulation
+    """
+    from .sarsa.configs.linear import config
+    env = RealEnvironment()
     config.eps_begin = 0
     config.eps_end = 0
     config.eps_nsteps = 0
@@ -32,9 +36,13 @@ def train_car():
 
 
 
-def train_simulation(draw=False, resume=False):
-    # make env
-    env = TestEnvironment(draw=draw)
+def train_simulation_sarsa(draw=False, resume=False):
+    """
+    Train a q-learning agent using the simulation
+    """
+    from .q_learning.configs.linear import config
+
+    env = SimulatedEnvironment(draw=draw)
 
     # exploration strategy
     exp_schedule = LinearExploration(env, config.eps_begin, config.eps_end, config.eps_nsteps)
@@ -48,10 +56,48 @@ def train_simulation(draw=False, resume=False):
 
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser("train.py")
-    parser.add_argument("--draw", action='store_true', help="Draw the simulation?")
-    parser.add_argument("--resume", action='store_true', help="Resume from file?")
-    args = parser.parse_args()
-    train_simulation(args.draw, args.resume)
+def train_simulation_ddpg(render=False, resume=False):
+    """
+    Train a ddpg agent using the simulation
+    """
+    from .environments.continuous import ContinuousEnvironment
+    from .ddpg.configs.simulation import config
 
+    env = ContinuousEnvironment(render=render)
+
+    tfconfig = tf.ConfigProto()
+    tfconfig.gpu_options.per_process_gpu_memory_fraction = 0.05
+
+    with tf.Session(config=tfconfig) as sess:
+
+        # Set the tensorflow seed
+        tf.set_random_seed(config.RANDOM_SEED)
+
+        # Start training
+        model = DDPG(sess, env, config)
+        model.train()
+        env.close()
+
+
+
+def train_car_ddpg(render=False, resume=False):
+    """
+    Train a ddpg agent using the simulation
+    """
+    from .environments.continuous import ContinuousEnvironment
+    from .ddpg.configs.simulation import config
+
+    env = ContinuousEnvironment(render=render)
+
+    tfconfig = tf.ConfigProto()
+    tfconfig.gpu_options.per_process_gpu_memory_fraction = 0.05
+
+    with tf.Session(config=tfconfig) as sess:
+
+        # Set the tensorflow seed
+        tf.set_random_seed(config.RANDOM_SEED)
+
+        # Start training
+        model = DDPG(sess, env, config)
+        model.train()
+        env.close()
