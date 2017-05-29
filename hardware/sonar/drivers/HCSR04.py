@@ -14,10 +14,7 @@ logger = logging.getLogger(__name__)
 class HCSR04():
     """
     Create a measurement using a HC-SR04 Ultrasonic Sensor connected to
-    the GPIO pins of a Raspberry Pi.
-    Metric values are used by default. For imperial values use
-    unit='imperial'
-    temperature=<Desired temperature in Fahrenheit>
+    the GPIO pins of a NVIDIA TX1.
     """
     max_distance_cm = 5000 # cm
 
@@ -84,7 +81,7 @@ class HCSR04():
                 logger.debug("Sonar timeout")
                 return duration
             self.sleep_us(1000)
-        # The sigal has returned
+        # The sigal has retnurned
         return time.time() - sonar_started
 
 

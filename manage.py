@@ -1,4 +1,5 @@
 import logging
+from hardware.car import car
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
 from webserver.application.app import app, db
@@ -13,13 +14,13 @@ manager.add_command('db', MigrateCommand)
 
 def setup_logger(name,level):
     logger = logging.getLogger(name)
-    logger.setLevel(level)
+    logger.setLevel(logging.INFO)
     ch = logging.StreamHandler()
     ch.setLevel(level)
     formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(name)s: %(message)s')
     ch.setFormatter(formatter)
-    logger.addHandler(ch)
-
+    #logger.addHandler(ch)
+    
 
 @manager.command
 def create_db():
@@ -37,6 +38,15 @@ def simulate():
 def train():
     """Train the car using the physical hardware"""
     train_car_ddpg()
+
+
+@manager.command
+def sonar():
+    """Run the sonar sensors and print their values"""
+    while True:
+        car.front_sonar.distance()
+        car.rear_sonar.distance()
+
 
 
 if __name__ == '__main__':
