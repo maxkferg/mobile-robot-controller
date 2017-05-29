@@ -17,6 +17,8 @@ class Sonar():
     echo_pin = None
     trigger_port = None
     trigger_pin = None
+    sonar_sample_size = 3
+    sonar_sample_wait = 0.01
 
     def __init__(self):
         trigger = Pin(self.trigger_port, self.trigger_pin, is_out=True)
@@ -29,7 +31,7 @@ class Sonar():
         Takes 11 sensor readings and returns the result
         If the distance is too large, the maximum is returned
         """
-        distance = self.sensor.distance_cm()
+        distance = self.sensor.distance_cm(self.sonar_sample_size, self.sonar_sample_wait)
         print("{0} distance = {1:.2f} cm".format(self.sensor_name, distance))
         return distance
 

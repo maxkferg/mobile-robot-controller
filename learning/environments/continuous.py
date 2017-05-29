@@ -1,85 +1,35 @@
-# Test Environment
-# Interface between learning algorith and physical car
-# Represents the worlrd as a MDP
+"""
+Continuous environments for the autonomous car
 
-import random
+In these environments the car specifies a throttle value between -1.0 and 1.0, and a 
+steering angle value between -1.0 and 1.0.
+
+The action space is represented as a R2 vector:
+
+A = [[ steering
+       throttle
+    ]] 
+
+ 
+The state space is represented as a R4 vector:
+
+S = [[ steering
+       throttle
+       front sonar
+       rear sonar
+    ]] 
+"""
+
+import sys
 import math
+import time
+import math
+import random
 import numpy as np
-import pygame
-import pymunk
-import pymunk.pygame_util
 from builtins import range
-from pygame.color import THECOLORS
-from pymunk.vec2d import Vec2d
-from ..sarsa.configs.linear import config
-
-
-class ContinuousEnvironment:
-    """
-    Continuous Test environment
-    """
-    crash_distance = 10
-
-    def __init__(self, render=False, seed=0):
-        self.steps = 0
-        self.resets = 0
-        self.random_seed = seed
-        self.state = GameState(render=True)
-        self.action_space = ActionSpace()
-        self.observation_space = ObservationSpace()
-
-        # Init PyGame
-    def seed(self,seed):
-        """
-        Set the environment seed
-        """
-        self.random_seed = seed
-
-
-    def render(self):
-        """
-        Render the environment
-        """
-        print("Rendering")
-        pygame.display.flip()
-
-
-    def reset(self):
-        """
-        Reset the environment
-        Return the state
-        """
-        self.resets += 1
-        action = self.action_space.sample()
-        _,sonar,_ = self.state.frame_step(action)
-        return self.get_state(sonar)
-
-
-    def step(self,action):
-        """
-        Move the car.
-        Return (new_state, reward, done, info) tuple
-        """
-        reward,sonar,done = self.state.frame_step(action)
-        state = self.get_state(sonar)
-        if self.steps%1000==0:
-            done = True # Restart if it survives 1000 steps
-        if done:
-            self.reset()
-        self.steps += 0
-        return (state,reward,done,False)
-
-
-    def get_state(self,sonar):
-        """
-        Return the current state
-        """
-        steering = self.state.steering
-        throttle = self.state.throttle
-        controls = [steering,throttle]
-        state = np.array(sonar+controls)
-        return state[None,:,None]
-
+from hardware.car import car
+from .utils.buffer import VectorBuffer
+from .simulation.car import CarSimulation
 
 
 class ActionSpace:
@@ -94,365 +44,226 @@ class ActionSpace:
         return np.random.uniform(low=0.0, high=1.0, size=self.shape)
 
 
-class ObservationSpace(object):
+class ObservationSpace:
     """
     Represents the observations which can be made
     """
-    shape = (4,1)
+    shape = (20,1)
 
 
-
-class GameState:
+class ContinuousEnvironment:
     """
-    Simulated game environment
-    Renders the game using PyGame
-    Computes Game Physics using PyMunk
+    Continuous simulated environment
+    Base class for simulated and real implimentations
     """
-    env_width = 1000
-    env_height = 700
-    sonar_scale = 10
-    crash_distance = 2
+    action_history = 50
+    state_history = 5
+    action_space = ActionSpace()
+    observation_space =  ObservationSpace()
 
-    def __init__(self, render=False):
-        # Start pygame
-        self.init_pygame()
-
-        # Global-ish.
-        self.crashed = False
-
-        # Drawing
-        self.show_sensors = render
-        self.draw_screen = render
-
-        # Physics stuff.
-        self.space = pymunk.Space()
-        self.space.gravity = pymunk.Vec2d(0., 0.)
-
-        # Create the car.
-        self.create_car(100, 100, 0.5)
-
-        self.steering = 0
-        self.throttle = 0
-
-        # Record steps.
-        self.num_steps = 0
-
-        # Create walls.
-        height = self.env_height
-        width = self.env_width
-        static = [
-            pymunk.Segment(
-                self.space.static_body,
-                (0, 1), (0, height), 1),
-            pymunk.Segment(
-                self.space.static_body,
-                (1, height), (width, height), 1),
-            pymunk.Segment(
-                self.space.static_body,
-                (width-1, height), (width-1, 1), 1),
-            pymunk.Segment(
-                self.space.static_body,
-                (1, 1), (width, 1), 1)
-        ]
-        for s in static:
-            s.friction = 1.
-            s.group = 1
-            s.collision_type = 1
-            s.color = THECOLORS['red']
-        self.space.add(static)
-
-        # Create some obstacles, semi-randomly.
-        # We'll create three and they'll move around to prevent over-fitting.
-        self.obstacles = []
-        self.obstacles.append(self.create_obstacle(200, 350, 10))
-        self.obstacles.append(self.create_obstacle(700, 200, 25))
-
-        # Create a cat.
-        self.create_cat()
+    def __init__(self, render=False, seed=0):
+        self.steps = 0
+        self.resets = 0
+        self.state_history = VectorBuffer((self.state_history, 4))
+        self.action_history = VectorBuffer((self.action_history, 2))
+        self.seed(seed)
 
 
-    def init_pygame(self):
-        # PyGame init
-        pygame.init()
-        self.screen = pygame.display.set_mode((self.env_width, self.env_height))
-        self.clock = pygame.time.Clock()
-        self.screen.set_alpha(None)
-        #while True:
-        #    pygame.display.update()
-        pymunk.pygame_util.positive_y_is_up = False
-        self.draw_options = pymunk.pygame_util.DrawOptions(self.screen)
-
-
-
-    def create_obstacle(self, x, y, r):
+    def seed(self,seed):
         """
-        Create an obstacle in the environment
+        Set the environment seed
         """
-        c_body = pymunk.Body(body_type=pymunk.Body.STATIC)
-        c_shape = pymunk.Circle(c_body, r)
-        c_shape.elasticity = 1.0
-        c_body.position = x, y
-        c_shape.color = THECOLORS["blue"]
-        self.space.add(c_body, c_shape)
-        return c_body
+        self.random_seed = seed
 
 
-    def create_cat(self):
+    def render(self):
         """
-        Create an moving obstacle in the environment
+        Render the environment. Extended by child classes
         """
-        inertia = pymunk.moment_for_circle(1, 0, 14, (0, 0))
-        self.cat_body = pymunk.Body(1, inertia)
-        self.cat_body.position = 50, self.env_height - 100
-        self.cat_shape = pymunk.Circle(self.cat_body, 30)
-        self.cat_shape.color = THECOLORS["orange"]
-        self.cat_shape.elasticity = 1.0
-        self.cat_shape.angle = 0.5
-        direction = Vec2d(1, 0).rotated(self.cat_body.angle)
-        self.space.add(self.cat_body, self.cat_shape)
+        pass
 
 
-    def create_car(self, x, y, r):
+    def step(self,action):
         """
-        Create a siumlated representation of the car
+        Move the car
         """
-        inertia = pymunk.moment_for_circle(1, 0, 14, (0, 0))
-        self.car_body = pymunk.Body(1, inertia)
-        self.position = x, y
-        self.car_shape = pymunk.Circle(self.car_body, 25)
-        self.car_shape.color = THECOLORS["green"]
-        self.car_shape.elasticity = 1.0
-        self.car_body.angle = r
-        self.car_body.friction = 0.01
-        driving_direction = Vec2d(1, 0).rotated(self.car_body.angle)
-        self.car_body.apply_impulse_at_local_point(driving_direction)
-        self.space.add(self.car_body, self.car_shape)
+        self._take_action(action)
+        state = self._get_current_state()
+        reward = self._get_reward(state)
+        done = self._is_done(state)
+
+        self.action_history.add(action)
+        self.state_history.add(state)
+        self.steps += 1
+
+        if done:
+            self.reset()
+
+        state_with_history = self.state_history.to_array()
+        return (state_with_history,reward,done,False)
 
 
-    def turn(self,rotation):
+    def reset(self):
         """
-        Turn the steering to @rotation
+        Reset the environment
         """
-        noise = 0.05*(random.random()-0.5)
-        self.steering = rotation + noise
-        self.steering = min(self.steering,+0.6)
-        self.steering = max(self.steering,-0.6)
+        self.car.reset()
+        self.resets += 1
+        self.state_history.add(self._get_current_state())
+        return self.state_history.to_array()
 
 
-    def drive(self,throttle):
+    def close(self):
         """
-        Drive the car forward or backward
+        Terminate the environment
         """
-        driving_direction = self.get_driving_direction()
-        self.car_body.velocity = 1000 * throttle * driving_direction
-        self.car_body.angle += throttle*self.steering # Update angle
+        pass
 
 
-    def get_driving_direction(self):
+    def _is_crashed(self,state):
         """
-        Return the driving direction in global coordinates
+        Return True if we think the car is crashed
         """
-        return Vec2d(1, 0).rotated(self.car_body.angle)
+        sonar = np.array(state[2:4])
+        if any(sonar<20):
+            return True
 
 
-    def get_reward(self,throttle,readings):
+    def _is_done(self,state):
         """
-        Calculate the reward for the most recent action
+        Return True if this episode is done
         """
-        readings = -5 + int(self.sum_readings(readings)//10)
-        return 4*throttle+readings
-
-
-    def frame_step(self, action):
-        self.rotation = action[0]
-        self.throttle = action[1]
-        self.turn(self.rotation)
-        self.drive(self.throttle)
-
-        # Move obstacles.
-        if self.num_steps % 100 == 0:
-            self.move_obstacles()
-
-        # Move cat.
-        if self.num_steps % 5 == 0:
-            self.move_cat()
-
-        # Update the screen and stuff.
-        self.screen.fill(THECOLORS["black"])
-        #self.space.debug_draw(self.draw_options)
-        self.space.step(1/10)
-        if self.draw_screen:
-            print('rendering...')
-            pygame.display.flip()
-        self.clock.tick()
-
-        # Get the current location and the readings there.
-        x, y = self.car_body.position
-        readings = self.get_sonar_readings(x, y, self.car_body.angle)
-
-        # Set the reward.
-        # Car crashed when any reading == 1
-        if self.car_is_crashed(readings):
-            self.crashed = True
-            self.recover_from_crash()
-            reward = -100
-            done = True
-        else:
-            # Higher readings are better, so return the sum.
-            reward = -5 + self.sum_readings(readings)/10
-            done = False
-        self.num_steps += 1
-
-        return reward, readings, done
-
-
-    def move_obstacles(self):
-        """
-        Randomly move obstacles around.
-        """
-        for obstacle in self.obstacles:
-            speed = random.randint(1, 5)
-            direction = Vec2d(1, 0).rotated(self.car_body.angle + random.randint(-2, 2))
-            obstacle.velocity = speed * direction
-
-
-    def move_cat(self):
-        """
-        Randomly move cat around.
-        """
-        speed = random.randint(10, 20)
-        self.cat_body.angle -= random.randint(-1, 1)
-        direction = Vec2d(1, 0).rotated(self.cat_body.angle)
-        self.cat_body.velocity = speed * direction
-
-
-    def car_is_crashed(self, readings):
-        """
-        Return true if the car has crashed
-        """
-        threshold = self.crash_distance * self.sonar_scale
-        if readings[0] <= threshold or readings[1] <= threshold:
+        if self._is_crashed(state):
+            print("Crashed")
+            return True
+        if self.steps % 500==0:
+            print("Survived 500 steps")
             return True
         return False
 
 
-    def recover_from_crash(self):
+    def _take_action(self,action):
         """
-        We hit something, so recover.
+        Apply a particular action to the car
         """
-        driving_direction = self.get_driving_direction()
-        x,y = self.car_body.position
-        if x<0 or y<0 or x>self.env_width or y>self.env_height:
-            self.car_body.position.x = 200
-            self.car_body.position.y = 200
-        self.crashed = False
-        for i in range(10):
-            self.screen.fill(THECOLORS["red"])
-            #self.space.debug_draw(self.draw_options)
-            pygame.display.update()
+        raise NotImplementedError
 
 
-    def sum_readings(self, readings):
+    def _get_current_state(self):
         """
-        Sum the number of non-zero readings.
+        Return the current state
         """
-        tot = 0
-        for i in readings:
-            tot += i
-        return tot
+        raise NotImplementedError
 
 
-    def get_sonar_readings(self, x, y, angle):
+    def _get_reward(self,state):
         """
-        Instead of using a grid of boolean(ish) sensors, sonar readings
-        simply return N "distance" readings, one for each sonar
-        we're simulating. The distance is a count of the first non-zero
-        reading starting at the object. For instance, if the fifth sensor
-        in a sonar "arm" is non-zero, then that arm returns a distance of 5.
+        Return the reward associated with @state
+        @param state: An object describing the car state
         """
-        readings = []
-        arm_front = self.make_sonar_arm(x, y)
-        arm_rear = arm_front
+        # Extract state parameters
+        rotation = state[0]
+        throttle = state[1]
+        sonar = state[2:4]
+        steering_history = self.action_history.to_array()[:,0]
+        # Penalize collisions heavily
+        if self._is_crashed(state):
+            return -1 - 5 * abs(throttle)
+        # Calculate reward
+        reward = 0
+        reward += 1.0 * max(0, throttle) # Favor driving forward
+        reward += 0.1 * min(0, throttle) # Penalize reversing
+        reward -= 10.0 * abs(np.mean(steering_history)) # Favor driving straight
+        reward += 0.01 * np.sum(np.log(sonar)) # Favor larger sonar values
+        assert isinstance(reward,float)
+        return reward
 
-        # Rotate them and get readings.
-        front = self.get_arm_distance(arm_front, x, y, angle, 0)
-        rear = self.get_arm_distance(arm_rear, x, y, angle, math.pi)
-
-        readings.append(self.sonar_scale*front)
-        readings.append(self.sonar_scale*rear)
-
-        if self.show_sensors:
-            pygame.display.update()
-
-        return readings
 
 
-    def get_arm_distance(self, arm, x, y, angle, offset):
+
+
+class SimulatedEnvironment(ContinuousEnvironment):
+    """
+    Continuous simulated environment
+
+    Uses pygame simulation to generate the state vector
+    """
+    def __init__(self, render=False, seed=0):
         """
-        Get the distance reading from a sonar arm
+        Initialize the simulation
         """
-        # Used to count the distance.
-        i = 0
-
-        # Look at each point and see if we've hit something.
-        for point in arm:
-            i += 1
-
-            # Move the point to the right spot.
-            rotated_p = self.get_rotated_point(
-                x, y, point[0], point[1], angle + offset
-            )
-
-            # Check if we've hit something. Return the current i (distance)
-            # if we did.
-            if rotated_p[0] <= 0 or rotated_p[1] <= 0 \
-                    or rotated_p[0] >= self.env_width or rotated_p[1] >= self.env_height:
-                return i  # Sensor is off the screen.
-            else:
-                obs = self.screen.get_at(rotated_p)
-                if self.get_track_or_not(obs) != 0:
-                    return i
-
-            if self.show_sensors:
-                pygame.draw.circle(self.screen, (255, 255, 255), (rotated_p), 2)
-
-        # Return the distance for the arm.
-        return i
+        super().__init__(render,seed)
+        self.car = CarSimulation(render=True)
 
 
-    def make_sonar_arm(self, x, y):
+    def render(self):
         """
-        Make a sonar arm
+        Render the environment
         """
-        spread = 10  # Default spread.
-        distance = 20  # Gap before first sensor.
-        arm_points = []
-        # Make an arm. We build it flat because we'll rotate it about the
-        # center later.
-        for i in range(1, 40):
-            arm_points.append((distance + x + (spread * i), y))
-
-        return arm_points
+        self.car.render()
 
 
-    def get_rotated_point(self, x_1, y_1, x_2, y_2, radians):
+    def _take_action(self, action):
         """
-        Rotate x_2, y_2 around x_1, y_1 by angle.
+        Execute a certain action
         """
-        x_change = (x_2 - x_1) * math.cos(radians) + \
-            (y_2 - y_1) * math.sin(radians)
-        y_change = (y_1 - y_2) * math.cos(radians) - \
-            (x_1 - x_2) * math.sin(radians)
-        new_x = x_change + x_1
-        new_y = self.env_height - (y_change + y_1)
-        return int(new_x), int(new_y)
+        self.car.frame_step(action)
+      
+
+    def _get_current_state(self):
+        """
+        Return the current state as a numpy array
+        """
+        # Take measurements
+        steering = self.car.steering
+        throttle = self.car.throttle
+        rear_sonar = self.car.rear_sonar
+        front_sonar = self.car.front_sonar
+        # Create R3 state vector representation
+        return [steering,throttle,front_sonar,rear_sonar]
 
 
-    def get_track_or_not(self, reading):
+  
+
+
+
+class RealEnvironment(ContinuousEnvironment):
+    """
+    Continuous real environment
+
+    Uses real car hardware to generate state vector 
+    """
+
+    def __init__(self, render=False, seed=0):
         """
-        Return whether an object is tracked
+        Initialize the car hardware
         """
-        if reading == THECOLORS['black']:
-            return 0
-        else:
-            return 1
+        super().__init__(render,seed)
+        self.car = car
+
+
+    def _take_action(self,action):
+        """
+        Apply a particular action on the real car
+        """
+        self.car.steering.set_rotation(0.4*action[0])
+        self.car.throttle.set_throttle(action[1])
+        
+
+    def _get_current_state(self):
+        """
+        Return the current state
+        """
+        # Take measurements
+        steering = self.car.steering.get_rotation()
+        throttle = self.car.throttle.get_throttle()
+        rear_sonar = self.car.rear_sonar.distance()
+        front_sonar = self.car.front_sonar.distance()
+        # Create R3 state vector representation
+        return [steering,throttle,front_sonar,rear_sonar]
+
+
+
+
+
+
