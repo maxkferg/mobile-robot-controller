@@ -66,8 +66,8 @@ class HCSR04():
         """
         self.trig_pin.low()
         time.sleep(sample_wait)
-        # Raise and lower the pin for 10 us
-        self.trig_pin.pulse(10)
+        # Raise and lower the pin for 500 us
+        self.trig_pin.pulse(500)
         # Check if the echo has already bounced back
         sonar_started = time.time()
         if self.echo_pin.get_value()==0:
