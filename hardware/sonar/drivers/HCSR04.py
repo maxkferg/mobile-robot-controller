@@ -4,7 +4,11 @@ sensor and a Raspberry Pi.
 Imperial and Metric measurements are available"""
 import time
 import math
+import logging
 from builtins import range
+
+# Setup a logger for this module
+logger = logging.getLogger(__name__)
 
 
 class HCSR04():
@@ -71,13 +75,13 @@ class HCSR04():
         # Check if the echo has already bounced back
         sonar_started = time.time()
         if self.echo_pin.get_value()==0:
-            print("Sonar already bounced")
+            logger.debug("Sonar already bounced")
             return 0
         # Wait for the sonar to return
         while self.echo_pin.get_value()==1:
             duration = time.time() - sonar_started
             if duration>sample_timeout:
-                print("Sonar timeout")
+                logger.debug("Sonar timeout")
                 return duration
             self.sleep_us(1000)
         # The sigal has returned

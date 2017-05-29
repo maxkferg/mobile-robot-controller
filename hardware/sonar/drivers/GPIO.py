@@ -1,3 +1,7 @@
+import logging
+
+# Setup a logger for this module
+logger = logging.getLogger(__name__)
 
 SYSFS_GPIO_DIR = "/sys/class/gpio"
 
@@ -66,7 +70,7 @@ class MockPin(object):
         """
         Open the GPIO pin for usage
         """
-        print("Mock: Enabled pin {0}".format(self.name))
+        logger.debug("Mock: Enabled pin {0}".format(self.name))
 
 
 
@@ -74,7 +78,7 @@ class MockPin(object):
         """
         Disable the GPIO pin
         """
-        print("Mock: Disabled pin {0}".format(self.name))
+        logger.debug("Mock: Disabled pin {0}".format(self.name))
 
 
 
@@ -83,7 +87,7 @@ class MockPin(object):
         Set the direction of the GPIO pin
         Return: Success = 0 ; otherwise open file error
         """
-        print("Mock: Set direction of pin {0}".format(self.name))
+        logger.debug("Mock: Set direction of pin {0}".format(self.name))
 
 
 

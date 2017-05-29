@@ -1,3 +1,4 @@
+import logging
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
 from webserver.application.app import app, db
@@ -8,6 +9,16 @@ manager = Manager(app)
 
 # migrations
 manager.add_command('db', MigrateCommand)
+
+
+def setup_logger(name,level):
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    ch = logging.StreamHandler()
+    ch.setLevel(level)
+    formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(name)s: %(message)s')
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
 
 
 @manager.command
@@ -29,4 +40,7 @@ def train():
 
 
 if __name__ == '__main__':
+    setup_logger('hardware',logging.INFO)
+    setup_logger('learning',logging.INFO)
+    setup_logger('webserver',logging.INFO)
     manager.run()

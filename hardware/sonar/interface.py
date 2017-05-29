@@ -1,12 +1,15 @@
 import os
+import logging
 import numpy as np
 from .drivers.GPIO import Pin, MockPin
 from .drivers.HCSR04 import HCSR04
 
+# Setup a logger for this module
+logger = logging.getLogger(__name__)
+
 # Change the class for development
 if os.environ.get('DEV'):
     Pin = MockPin
-
 
 
 class Sonar():
@@ -32,7 +35,7 @@ class Sonar():
         If the distance is too large, the maximum is returned
         """
         distance = self.sensor.distance_cm(self.sonar_sample_size, self.sonar_sample_wait)
-        print("{0} distance = {1:.2f} cm".format(self.sensor_name, distance))
+        logger.debug("{0} distance = {1:.2f} cm".format(self.sensor_name, distance))
         return distance
 
 

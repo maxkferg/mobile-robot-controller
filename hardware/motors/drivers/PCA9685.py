@@ -22,6 +22,8 @@ import logging
 import time
 import math
 
+# Setup a logger for this module
+logger = logging.getLogger(__name__)
 
 # Registers/etc:
 PCA9685_ADDRESS    = 0x40
@@ -48,9 +50,6 @@ INVRT              = 0x10
 OUTDRV             = 0x04
 
 
-logger = logging.getLogger(__name__)
-
-
 def software_reset(i2c=None, **kwargs):
     """Sends a software reset (SWRST) command to all servo drivers on the bus."""
     # Setup I2C interface for device 0x00 to talk to all of them.
@@ -67,16 +66,16 @@ class Mock():
 
     def __init__(self, address=PCA9685_ADDRESS, i2c=None, **kwargs):
         if kwargs.get('busnum'):
-            print("Mock: Using I2C bus {busnum}".format(kwargs))
+            logger.debug("Mock: Using I2C bus {busnum}".format(kwargs))
 
     def set_pwm_freq(self, freq_hz):
-        print("Mock: Set PWM frequency to {0} Hz".format(freq_hz))
+        logger.debug("Mock: Set PWM frequency to {0} Hz".format(freq_hz))
 
     def set_pwm(self, channel, on, off):
-        print("Mock: Set PWM channel={0} to {1} bits".format(channel,off))
+        logger.debug("Mock: Set PWM channel={0} to {1} bits".format(channel,off))
 
     def set_all_pwm(self, on, off):
-        print("Mock: Set all PWM to {0} bits".format(off))
+        logger.debug("Mock: Set all PWM to {0} bits".format(off))
 
 
 

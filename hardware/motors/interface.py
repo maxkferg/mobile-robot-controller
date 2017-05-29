@@ -1,8 +1,11 @@
 import os,time
+import logging
 import numpy as np
 from builtins import range
 from .drivers import Mock,PCA9685
 
+# Setup a logger for this module
+logger = logging.getLogger(__name__)
 
 if os.environ.get('DEV'):
     PCA9685 = Mock
@@ -28,10 +31,10 @@ class PWM(object):
         """
         Set the length of the PWM pulse length (in ms)
         """
-        print('{0}: changing pulse length to {1} ms'.format(self,length))
+        logger.debug('{0}: changing pulse length to {1} ms'.format(self,length))
         total_period = 1000/self.frequency
         pulse_bits = int(self.resolution * length / total_period)
-        print('{0}: changing pulse length to {1}/{2} bits'.format(self, pulse_bits, self.resolution))
+        logger.debug('{0}: changing pulse length to {1}/{2} bits'.format(self, pulse_bits, self.resolution))
         self.controller.set_pwm(self.channel, 0, pulse_bits)
         self.pulse_length = length
 
@@ -114,7 +117,7 @@ class Steering(PWM):
         self.rotation = rotation
         self.rotation = max(self.rotation, self.min_rotation)
         self.rotation = min(self.rotation, self.max_rotation)
-        print('{0}: changing steering to {1}'.format(self,self.rotation))
+        logger.debug('{0}: changing steering to {1}'.format(self,self.rotation))
         gradient = (self.pwm_max_pulse - self.pwm_min_pulse)/(self.max_rotation - self.min_rotation)
         pulse = self.rotation*gradient + self.pwm_min_pulse - gradient*self.min_rotation
         assert pulse >= self.pwm_min_pulse
@@ -180,7 +183,7 @@ class Throttle(PWM):
         very rapid changes.
         """
         speed = self._limit_throttle(speed)
-        print('{0}: changing throttle to {1}'.format(self,speed))
+        logger.debug('{0}: changing throttle to {1}'.format(self,speed))
         if self.throttle>=0 and -speed>self.throttle:
             return self._engage_reverse(speed)
         return self._set_throttle( speed)
@@ -207,7 +210,7 @@ class Throttle(PWM):
         """
 
         forward_max = 0.40
-        backward_max = -0.40
+        backward_max = -0.35
 
         if speed < backward_max:
             return backward_max
@@ -221,9 +224,9 @@ class Throttle(PWM):
         Return the new limited PWM
         Certain PWM frequencies will cause damage, so we block them
         """
-        pwm_stall_min = 1.35 # ms
-        pwm_stall_max = 1.65 # ms
-        pwm_stopped = 1.56 # ms
+        pwm_stall_min = 1.40 # ms
+        pwm_stall_max = 1.63 # ms
+        pwm_stopped = 1.55 # ms
         if pwm_stall_min < pulse and pulse < pwm_stall_max:
             pulse = pwm_stopped
         assert pulse >= self.pwm_min_pulse # Sanity check
