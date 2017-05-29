@@ -66,6 +66,14 @@ class MockPin(object):
         pass
 
 
+    def pulse(self,duration):
+        """
+        Hardware efficient method to send a pulse on this pin
+        @duration: The duration of the pulse in us
+        """
+        pass
+
+
     def enable(self):
         """
         Open the GPIO pin for usage
@@ -151,13 +159,30 @@ class Pin(object):
         self.set_value(0)
 
 
-
     def high(self):
         """
         Set the pin to the low state (convenience method)
         """
         self.set_value(1)
 
+
+    def pulse(self,duration):
+        """
+        Hardware efficient method to send a pulse on this pin
+        @duration: The duration of the pulse in us
+        """
+        duration = duration/10**6
+        filename = "{0}/{1}/value".format(SYSFS_GPIO_DIR, self.name)
+
+        try:
+            with open(filename,'w') as buff:
+                buff.write("0")
+                buff.write("1")
+                time.sleep(duration)
+                buff.write("0")
+        except Exception as e:
+            print("Unable to send GPIO pulse")
+            raise e
 
 
     def enable(self):
