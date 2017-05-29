@@ -134,7 +134,9 @@ class ContinuousEnvironment:
         Return True if this episode is done
         """
         if self._is_crashed(state):
-            print("Crashed")
+            print(80*"-")
+            print("             CRASHED         ")
+            print(80*"-")
             return True
         if self.steps % 500==0:
             print("Survived 500 steps")
@@ -168,12 +170,12 @@ class ContinuousEnvironment:
         steering_history = self.action_history.to_array()[:,0]
         # Penalize collisions heavily
         if self._is_crashed(state):
-            return -1 - 5 * abs(throttle)
+            return -50 - 100 * abs(throttle)
         # Calculate reward
         reward = 0
         reward += 1.0 * max(0, throttle) # Favor driving forward
-        reward += 0.1 * min(0, throttle) # Penalize reversing
-        reward -= 10.0 * abs(np.mean(steering_history)) # Favor driving straight
+        #reward += 0.1 * min(0, throttle) # Penalize reversing
+        #reward -= 10.0 * abs(np.mean(steering_history)) # Favor driving straight
         reward += 0.01 * np.sum(np.log(sonar)) # Favor larger sonar values
         assert isinstance(reward,float)
         return reward
