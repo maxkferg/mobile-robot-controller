@@ -246,7 +246,7 @@ class RealEnvironment(ContinuousEnvironment):
         """
         Apply a particular action on the real car
         """
-        self.car.steering.set_rotation(0.4*action[0])
+        self.car.steering.set_rotation(action[0])
         self.car.throttle.set_throttle(action[1])
         
 

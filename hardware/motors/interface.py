@@ -209,7 +209,7 @@ class Throttle(PWM):
         Return the new (limited) speed
         """
 
-        forward_max = 0.40
+        forward_max = 0.48
         backward_max = -0.35
 
         if speed < backward_max:
