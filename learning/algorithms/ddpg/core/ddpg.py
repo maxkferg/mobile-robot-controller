@@ -86,7 +86,9 @@ class DDPG:
 
         # Load the replay bufffer
         self.replay_buffer = pickle.load(open(os.path.join(directory, "replay_buffer.pkl"), "rb"))
+        print(80*"=")
         print("Model restored from %s" % os.path.join(directory, "ddpg_model"))
+        print(80*"=")
 
 
 
@@ -198,7 +200,9 @@ class DDPG:
                 self.saver.export_meta_graph(save_metagraph, as_text=True)
                 save_path = self.saver.save(self.sess, config.SAVE_DIR)
                 pickle.dump(self.replay_buffer, open(save_buffer, "wb"))
+                print(80*"=")
                 print("Model saved in %.1f" % (time() - save_start), "seconds. Path: %s" % save_path)
+                print(80*"=")
 
 
 
