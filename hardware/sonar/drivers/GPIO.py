@@ -177,10 +177,12 @@ class Pin(object):
 
         try:
             with open(filename,'w') as buff:
-                buff.write("0")
+                start = time.time()
                 buff.write("1")
                 time.sleep(duration)
                 buff.write("0")
+                total = 10**6 * (time.time()-start)
+                logging.info("Pulse duration was {0}us".format(total))
         except Exception as e:
             print("Unable to send GPIO pulse")
             raise e
