@@ -77,18 +77,19 @@ class ActorNetwork(object):
         state = tflearn.input_data(shape=[None, self.state_dim], name='actor_input'+suffix)
         # state_bn = tf.layers.batch_normalization(state, training=self.is_training, scale=False,
         #                                          name='actor_BN_input'+suffix)
-        net = tflearn.fully_connected(state, 400, activation='relu', name='actor_L1'+suffix,
+        net = tflearn.fully_connected(state, 400, activation='tanh', name='actor_L1'+suffix,
                                       weights_init=tflearn.initializations.variance_scaling(seed=self.seed))
         if suffix == "":
             tf.summary.histogram("Actor/Layer1", net.W)
         # net = tf.layers.batch_normalization(net, training=self.is_training, scale=False,
         #                                     name='actor_BN1'+suffix)
-        net = tflearn.fully_connected(net, 300, activation='relu', name='actor_L2'+suffix,
+        net = tflearn.fully_connected(net, 300, activation='tanh', name='actor_L2'+suffix,
                                       weights_init=tflearn.initializations.variance_scaling(seed=self.seed))
         if suffix == "":
             tf.summary.histogram("Actor/Layer2", net.W)
         # net = tf.layers.batch_normalization(net, training=self.is_training, scale=True,
         #                                     name='actor_BN2'+suffix)
+
         # Final layer weights are initialized to Uniform[-3e-3, 3e-3]
         weight_init_final = tflearn.initializations.uniform(minval=-0.003, maxval=0.003, seed=self.seed)
         action = tflearn.fully_connected(net, self.action_dim, activation='tanh', weights_init=weight_init_final,

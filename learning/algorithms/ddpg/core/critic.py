@@ -80,7 +80,7 @@ class CriticNetwork(object):
         action = tflearn.input_data(shape=[None, self.action_dim], name="critic_input_action"+suffix)
         # action_bn = tf.layers.batch_normalization(action, training=self.is_training, scale=False,
         #                                           name='critic_BN_action'+suffix)
-        net = tflearn.fully_connected(state, 400, activation='relu', name='critic_L1'+suffix,
+        net = tflearn.fully_connected(state, 400, activation='tanh', name='critic_L1'+suffix,
                                       weights_init=tflearn.initializations.variance_scaling(seed=self.seed))
         if suffix == "":
             tf.summary.histogram("Critic/Layer1", net.W)
@@ -91,7 +91,7 @@ class CriticNetwork(object):
                                           weights_init=tflearn.initializations.variance_scaling(seed=self.seed))
         a_union = tflearn.fully_connected(action, 300, name="critic_L2_action" + suffix,
                                           weights_init=tflearn.initializations.variance_scaling(seed=self.seed))
-        net = tf.nn.relu(tf.matmul(net, s_union.W) + tf.matmul(action, a_union.W) + s_union.b,
+        net = tf.nn.tanh(tf.matmul(net, s_union.W) + tf.matmul(action, a_union.W) + s_union.b,
                          name='critic_L2' + suffix)
         if suffix == "":
             tf.summary.histogram("Critic/Layer2/state", s_union.W)
