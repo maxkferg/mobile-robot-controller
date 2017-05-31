@@ -268,7 +268,7 @@ class RealEnvironment(ContinuousEnvironment):
         Wait for a manual reset
         """
         state = super().reset()
-        raw_input("Press enter to continue training?")
+        input("Press enter to continue training?")
         return state
 
 
