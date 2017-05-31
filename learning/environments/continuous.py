@@ -284,7 +284,7 @@ class RealEnvironment(ContinuousEnvironment):
         """
         Check for three crashed events
         """
-        is_crashed = super()._is_crashed(self,state)
+        is_crashed = super()._is_crashed(state)
         for i in range(n-1):
             state = self.state_history.items[i,:]
             is_crashed = is_crashed and super()._is_crashed(state)
