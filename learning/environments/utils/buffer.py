@@ -26,11 +26,15 @@ class VectorBuffer:
 		self.items[0,:] = vector
 
 
-	def clean(self):
+	def clean(self,vector=None):
 		"""
-		Set all the elements to zero
+		Set all the elements to vector
 		"""
-		self.items = np.zeros(self.size, self.dtype)
+		if vector is None:
+			self.items = np.zeros(self.size)
+		else:
+			for i in range(self.size[0]):
+				self.items[i,:] = vector
 
 
 	def to_array(self):

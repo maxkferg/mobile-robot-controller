@@ -124,8 +124,7 @@ class ContinuousEnvironment:
         self.car.reset()
         self.resets += 1
         self.action_history.clean()
-        self.state_history.clean()
-        self.state_history.add(self._get_current_state())
+        self.state_history.clean(self._get_current_state())
         return self.state_history.to_array()
 
 
