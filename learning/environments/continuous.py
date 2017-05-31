@@ -42,7 +42,6 @@ def normalize_sonar(sonar):
     The NN is initialized assuming that the state values are about 1
     Normalizing the sonar helps to improve the initial policy
     """
-    print(sonar/100)
     return sonar/100 # Convert to meters
 
 
@@ -113,7 +112,6 @@ class ContinuousEnvironment:
         self.steps += 1
 
         state_with_history = self.state_history.to_array()
-        print(self.state_history.to_array())
         return (state_with_history,reward,done,False)
 
 
