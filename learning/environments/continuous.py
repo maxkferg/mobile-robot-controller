@@ -280,6 +280,17 @@ class RealEnvironment(ContinuousEnvironment):
         self.car.throttle.set_throttle(action[1])
 
 
+    def _is_crashed(self,state,n=3):
+        """
+        Check for three crashed events
+        """
+        is_crashed = super()._is_crashed(self,state)
+        for i in range(n-1):
+            state = self.state_history.items[i,:]
+            is_crashed = is_crashed and super()._is_crashed(state)
+        return is_crashed
+
+
     def _get_current_state(self):
         """
         Return the current state
