@@ -14,7 +14,7 @@ class default:
 	Default training parameters for any DDPG network
 	"""
 	# Max training steps
-	MAX_EPISODES = 1000
+	MAX_EPISODES = 10000
 
 	# Max episode length
 	MAX_EP_STEPS = 2000
@@ -54,8 +54,17 @@ class demo(default):
 	# Directory for storing TensorBoard summary results
 	RANDOM_SEED = 1234
 
-	# Set to restoring from file
-	RESTORE_DATE = None
+	# Whether we should render the environment
+	render = False
+
+	# Where the model is loaded from
+	LOAD_DIR = None#"weights/demo/Tue-19-20/"
+
+	# Where the model is saved to
+	SAVE_DIR = "weights/demo/{0}/".format(timestamp())
+
+	# Soft target update param
+	TAU = 0.001  # Paper uses 0.001
 
 
 
@@ -67,11 +76,20 @@ class simulation(default):
 	# Directory for storing TensorBoard summary results
 	RANDOM_SEED = 1234
 
+	# Whether we should render the environment
+	render = False
+
 	# Where the model is loaded from
-	LOAD_DIR = False#"weights/ddpg/Sun-23-32/"
-	
+	LOAD_DIR = None#"weights/ddpg/Tue-21-37/"#"weights/ddpg/Tue-20-28/"
+
 	# Where the model is saved to
 	SAVE_DIR = "weights/ddpg/{0}/".format(timestamp())
 
 	# Soft target update param
-	TAU = 0.0001  # Paper uses 0.001
+	TAU = 0.001  # Paper uses 0.001
+
+	# Exploration parameters
+	OU_MU = 0.0
+	OU_THETA = 0.45  # Paper uses 0.15
+	OU_SIGMA = 0.60  # Paper uses 0.20
+	TAU2 = 1000

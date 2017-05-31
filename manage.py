@@ -20,7 +20,7 @@ def setup_logger(name,level):
     formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(name)s: %(message)s')
     ch.setFormatter(formatter)
     #logger.addHandler(ch)
-    
+
 
 @manager.command
 def create_db():
@@ -38,6 +38,14 @@ def simulate():
 def train():
     """Train the car using the physical hardware"""
     train_car_ddpg()
+
+
+@manager.command
+def demo():
+    """Run the DDPG pendulum demo"""
+    from learning.algorithms.ddpg.demo import demo
+    from learning.configs.ddpg import demo as config
+    demo(config)
 
 
 @manager.command

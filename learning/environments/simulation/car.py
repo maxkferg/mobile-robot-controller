@@ -21,7 +21,7 @@ class CarSimulation:
     steering_scale = 0.05
     throttle_scale = 100
 
-    def __init__(self, render=True):
+    def __init__(self):
 
         # Public properties
         self.throttle = 0
@@ -68,17 +68,18 @@ class CarSimulation:
             s.collision_type = 1
             s.color = THECOLORS['red']
         self.space.add(static)
+        self.space.add(self.create_wall())
 
         # Create some obstacles, semi-randomly.
         # We'll create three and they'll move around to prevent over-fitting.
         self.obstacles = []
-        self.obstacles.append(self.create_obstacle(200, 550, 75))
-        self.obstacles.append(self.create_obstacle(700, 200, 50))
-        self.obstacles.append(self.create_obstacle(550, 600, 80))
-        self.obstacles.append(self.create_obstacle(200, 200, 50))
+        #self.obstacles.append(self.create_obstacle(200, 550, 20))
+        #self.obstacles.append(self.create_obstacle(700, 200, 30))
+        #self.obstacles.append(self.create_obstacle(550, 600, 20))
+        #self.obstacles.append(self.create_obstacle(200, 200, 20))
 
         # Create a cat.
-        self.create_cat()
+        #self.create_cat()
 
 
     def init_pygame(self):
@@ -116,7 +117,10 @@ class CarSimulation:
         """
         Reset the game simulation
         """
-        pass
+        x = random.randint(-20,20)+self.env_width/2
+        y = random.randint(-20,20)+self.env_height/4
+        self.car_body.position = x,y
+        self.car_body.angle = 0.5*random.random()
 
 
     def create_obstacle(self, x, y, r):
@@ -131,6 +135,20 @@ class CarSimulation:
         c_shape.color = THECOLORS["blue"]
         self.space.add(c_body, c_shape)
         return c_body
+
+
+    def create_wall(self,thickness=10):
+        """
+        Create wall in the environment
+        """
+        start = (200, self.env_height/2)
+        end = (self.env_width-200, self.env_height/2)
+        wall = pymunk.Segment(self.space.static_body, start, end, thickness)
+        wall.friction = 1.
+        wall.group = 1
+        wall.collision_type = 1
+        wall.color = THECOLORS['red']
+        return wall
 
 
     def create_cat(self):
@@ -179,13 +197,12 @@ class CarSimulation:
         """
         Take @action and move forward one time step
         """
-        noise = random.random()-0.5
-        self.steering = action[0] + noise
+        self.steering = action[0]
         self.throttle = action[1]
 
         self.move_car()
-        self.move_obstacles()
-        self.move_cat()
+        #self.move_obstacles()
+        #self.move_cat()
 
         # Update the screen and stuff.
         self.screen.fill(THECOLORS["black"])
@@ -228,7 +245,6 @@ class CarSimulation:
         Randomly move cat around.
         """
         speed = random.random()
-        #self.cat_body.angle = 
         direction = Vec2d(self.car_body.position)-Vec2d(self.cat_body.position)
         self.cat_body.velocity = speed * direction
 

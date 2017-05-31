@@ -6,19 +6,14 @@ import gym
 import tensorflow as tf
 from gym import wrappers
 from datetime import datetime
-from core.ddpg import DDPG
-from config.demo import config
+from .core.ddpg import DDPG
 
 
-if config.RESTORE_DATE is not None:
-    config.SUMMARY_DIR = os.path.join(config.OUTPUT_RESULTS_DIR, 'results','ddpg' 'gym', config.ENVIRONMENT, config.RESTORE_DATE)
-else:
-    config.TIMESTAMP = datetime.now().strftime("%Y%m%d-%H%M%S")
-    config.SUMMARY_DIR = os.path.join(config.OUTPUT_RESULTS_DIR, 'results','ddpg' 'gym', config.ENVIRONMENT, config.TIMESTAMP)
-
-
-
-def main(_):
+def demo(config):
+    """
+    Run the DDPG Demo tests
+    @config should be a config object specifying the learning parameters
+    """
     # Need to split actor & critic into different graphs/sessions to prevent serialization errors
     # See https://github.com/tflearn/tflearn/issues/381
     tfconfig = tf.ConfigProto()
@@ -28,7 +23,7 @@ def main(_):
     with tf.Session(config=tfconfig) as sess:
         # Make the gym environment
         env = gym.make(config.ENVIRONMENT)
-        env = wrappers.Monitor(env, os.path.join(config.SUMMARY_DIR, config.ENVIRONMENT+'-experiment'), force=True)
+        env = wrappers.Monitor(env, os.path.join(config.SAVE_DIR, config.ENVIRONMENT+'-experiment'), force=True)
 
         # Set the tensorflow seed
         tf.set_random_seed(config.RANDOM_SEED)
@@ -37,6 +32,3 @@ def main(_):
         model = DDPG(sess, env, config)
         model.train()
         env.close()
-
-if __name__ == '__main__':
-    tf.app.run()

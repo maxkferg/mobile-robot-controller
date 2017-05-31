@@ -20,7 +20,6 @@ class Car(object):
         """
         Reset the car controllers
         """
-        self.steering.reset()
         self.throttle.reset()
 
 

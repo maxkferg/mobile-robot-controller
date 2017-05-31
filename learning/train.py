@@ -37,11 +37,11 @@ def train_car_sarsa():
 
 
 
-def train_simulation_sarsa(draw=False, resume=False):
+def train_simulation_sarsa():
     """
     Train a q-learning agent using the simulation
     """
-    config = sarsa_config.linear 
+    config = sarsa_config.linear
 
     # Create simulated enviroment with discrete action space
     env = discrete.SimulatedEnvironment(draw=draw)
@@ -53,17 +53,17 @@ def train_simulation_sarsa(draw=False, resume=False):
     lr_schedule  = LinearSchedule(config.lr_begin, config.lr_end, config.lr_nsteps)
 
     # train
-    model = Linear(env, config, resume=resume)
+    model = Linear(env, config)
     model.run(exp_schedule, lr_schedule)
 
 
 
-def train_simulation_ddpg(render=False, resume=False):
+def train_simulation_ddpg():
     """
     Train a ddpg agent using the simulation
     """
     config = ddpg_config.simulation
-    env = continuous.SimulatedEnvironment(render=render)
+    env = continuous.SimulatedEnvironment(render=config.render)
 
     tfconfig = tf.ConfigProto()
     tfconfig.gpu_options.per_process_gpu_memory_fraction = 0.05
@@ -76,12 +76,12 @@ def train_simulation_ddpg(render=False, resume=False):
 
 
 
-def train_car_ddpg(render=False, resume=False):
+def train_car_ddpg():
     """
     Train a ddpg agent using the simulation
     """
     config = ddpg_config.simulation
-    env = continuous.RealEnvironment(render=render)
+    env = continuous.RealEnvironment(render=config.render)
 
     tfconfig = tf.ConfigProto()
     tfconfig.gpu_options.per_process_gpu_memory_fraction = 0.05

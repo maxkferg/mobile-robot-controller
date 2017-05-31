@@ -11,6 +11,7 @@ class VectorBuffer:
 		if len(size)==1:
 			size = [size,1]
 		self.size = size
+		self.dtype = dtype
 		self.items = np.zeros(size,dtype)
 
 
@@ -23,6 +24,13 @@ class VectorBuffer:
 			raise ValueError("Expected vector of size",size[1:])
 		self.items = np.roll(self.items, shift=1, axis=0)
 		self.items[0,:] = vector
+
+
+	def clean(self):
+		"""
+		Set all the elements to zero
+		"""
+		self.items = np.zeros(self.size, self.dtype)
 
 
 	def to_array(self):
