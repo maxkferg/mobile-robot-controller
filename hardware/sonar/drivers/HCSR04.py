@@ -11,12 +11,27 @@ from builtins import range
 logger = logging.getLogger(__name__)
 
 
+def is_falling_edge(current,previous):
+    """
+    Return True if the two points represent a falling edge
+    """
+    return current == 0 and previous == 1
+
+
+def is_rising_edge(current,previous):
+    """
+    Return True if the two points represent a rising edge
+    """
+    return current == 1 and previous == 0
+
+
+
 class HCSR04():
     """
     Create a measurement using a HC-SR04 Ultrasonic Sensor connected to
     the GPIO pins of a NVIDIA TX1.
     """
-    max_distance_cm = 5000 # cm
+    max_distance_cm = 500 # cm
 
     def __init__(self, trig_pin, echo_pin, temperature=20):
         self.trig_pin = trig_pin
@@ -47,7 +62,7 @@ class HCSR04():
         """
 
         speed_of_sound = 331.3 * math.sqrt(1+(self.temperature / 273.15))
-        sample_timeout = self.max_distance_cm / speed_of_sound / 100
+        sample_timeout = 2 * self.max_distance_cm / speed_of_sound / 100
         sample = []
 
         for distance_reading in range(sample_size):
@@ -67,21 +82,25 @@ class HCSR04():
         self.trig_pin.low()
         time.sleep(sample_wait)
         # Raise and lower the pin for 500 us
-        self.trig_pin.pulse(500)
-        # Check if the echo has already bounced back
-        sonar_started = time.time()
-        if self.echo_pin.get_value()==0:
-            logger.debug("Sonar already bounced")
-            return 0
-        # Wait for the sonar to return
-        while self.echo_pin.get_value()==1:
-            duration = time.time() - sonar_started
-            if duration>sample_timeout:
-                logger.debug("Sonar timeout")
+        self.trig_pin.pulse(100)
+        # Start waiting for the reply
+        start = time.time()
+        duration = time.time()-start
+        previous_state = self.echo_pin.get_value()
+        # Loop until we see the echo
+        while duration<sample_timeout:
+            state = self.echo_pin.get_value()
+            if is_falling_edge(state,previous_state):
+                logger.debug("Received sonar signal")
                 return duration
-            self.sleep_us(1000)
-        # The sigal has retnurned
-        return time.time() - sonar_started
+            if is_rising_edge(state,previous_state):
+                logger.debug("Received sonar echo")
+                return duration/2
+            self.sleep_us(500)
+            duration = time.time()-start
+        # It took too long to receive the response
+        logger.debug("Sonar timeout")
+        return duration
 
 
     def sleep_us(self,duration):
