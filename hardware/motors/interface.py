@@ -1,3 +1,10 @@
+"""
+Public interface to the Traxxis Rustler Motors
+Provides control of the steering and drive motors
+
+Author: Max Ferguson
+License: MIT
+"""
 import os,time
 import logging
 import numpy as np

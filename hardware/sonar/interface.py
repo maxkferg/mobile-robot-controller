@@ -15,27 +15,43 @@ if os.environ.get('DEV'):
 class Sonar():
     """
     A sonar sensor on the Car
+
+    Use Sonar.tick to run the sonar
+    After running Sonar.tick multiple times, run Sonar.distance to get the distance
     """
     echo_port = None
     echo_pin = None
     trigger_port = None
     trigger_pin = None
     sonar_sample_size = 3
-    sonar_sample_wait = 0.03
+    sonar_sample_wait = 0.01
 
     def __init__(self):
         trigger = Pin(self.trigger_port, self.trigger_pin, is_out=True)
         echo = Pin(self.echo_port, self.echo_pin, is_out=False)
         self.sensor = HCSR04(trigger, echo)
+        self.buffer = []
+
+
+    def tick(self):
+        """
+        Take a single sonar reading. Add it to the reading buffer
+        """
+        samples = 1
+        while len(self.buffer)<self.sonar_sample_size+1
+            distance = self.sensor.distance_meters(samples, self.sonar_sample_wait)
+            self.buffer.insert(0,distance)
+        self.buffer.pop()
+
 
     def distance(self):
         """
-        Return the distance in cm
-        Takes 11 sensor readings and returns the result
-        If the distance is too large, the maximum is returned
+        Return the distance in meters.
+        Uses the reading buffer to estimate the current distance
         """
-        distance = self.sensor.distance_cm(self.sonar_sample_size, self.sonar_sample_wait)
-        logger.info("{0} distance = {1:.2f} cm".format(self.sensor_name, distance))
+        sorted_distance = sorted(self.buffer)
+        return sorted_distance[self.sample_size // 2]
+        logger.info("{0} distance = {1:.2f} m".format(self.sensor_name, distance))
         return distance
 
 
@@ -65,14 +81,3 @@ class RearSonar(Sonar):
     trigger_port = "J21"
     trigger_pin = "29"
     sensor_name = "RearSonar"
-
-
-
-if __name__=="__main__":
-    command = None
-    front = FrontSonar()
-    back = BackSonar()
-    while True:
-        print("Front: {0}".format(front.distance()))
-        print("Back: {0}".format(back.distance()))
-

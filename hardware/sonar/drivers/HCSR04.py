@@ -1,7 +1,10 @@
 """
 Measure the distance or depth with an HCSR04 Ultrasonic sound
-sensor and a Raspberry Pi.
-Imperial and Metric measurements are available"""
+sensor and a NVIDIA TX1. All values are returned in meters
+
+Author: Max Ferguson
+License: MIT
+"""
 import time
 import math
 import logging
@@ -31,16 +34,16 @@ class HCSR04():
     Create a measurement using a HC-SR04 Ultrasonic Sensor connected to
     the GPIO pins of a NVIDIA TX1.
     """
-    max_distance_cm = 500 # cm
+    max_distance_meters = 5.00 # meters
 
     def __init__(self, trig_pin, echo_pin, temperature=20):
         self.trig_pin = trig_pin
         self.echo_pin = echo_pin
         self.temperature = temperature
 
-    def distance_cm(self, sample_size=11, sample_wait=0.1):
+    def distance_meters(self, sample_size=11, sample_wait=0.1):
         """
-        Return an error corrected unrounded distance, in cm, of an object
+        Return an error corrected unrounded distance, in meters, of an object
         adjusted for temperature in Celcius.  The distance calculated
         is the median value of a sample of `sample_size` readings.
 
@@ -62,15 +65,11 @@ class HCSR04():
         """
 
         speed_of_sound = 331.3 * math.sqrt(1+(self.temperature / 273.15))
-        sample_timeout = 2 * self.max_distance_cm / speed_of_sound / 100
-        sample = []
+        sample_timeout = 2 * self.max_distance_meters / speed_of_sound
 
-        for distance_reading in range(sample_size):
-            time_passed = self.take_sample(sample_wait,sample_timeout)
-            distance_cm = time_passed * ((speed_of_sound * 100) / 2)
-            sample.append(distance_cm)
-        sorted_sample = sorted(sample)
-        return sorted_sample[sample_size // 2]
+        time_passed = self.take_sample(sample_wait,sample_timeout)
+        distance_meters = time_passed * (speed_of_sound / 2)
+        return distance_meters
 
 
     def take_sample(self,sample_wait,sample_timeout):
