@@ -116,6 +116,7 @@ class ContinuousEnvironment:
         self.resets += 1
         self.action_history.clean()
         self.sensor_history.clean(state.sensors)
+        print("Environment Reset")
         return state
 
 
@@ -255,15 +256,6 @@ class RealEnvironment(ContinuousEnvironment):
         self.car = car
 
 
-    def reset(self):
-        """
-        Wait for a manual reset
-        """
-        state = super().reset()
-        input("Press enter to continue training?")
-        return state
-
-
     def _take_action(self,action):
         """
         Apply a particular action on the real car
@@ -277,10 +269,17 @@ class RealEnvironment(ContinuousEnvironment):
         Check for three crashed events
         """
         is_crashed = super()._is_crashed(state)
-        for i in range(n-1):
-            state = self.sensor_history.items[i,:]
-            is_crashed = is_crashed and super()._is_crashed(state)
-        return is_crashed
+        if is_crashed:
+            # Save state and stop car
+            throttle = self.car.throttle.get_throttle()
+            self.car.throttle.set_throttle(0)
+            # Check if the car is crashed
+            option = input("Press enter to continue (or 'c' to crash)")
+            if option.lower().strip()=='c':
+                return True
+            # Restore state
+            self.car.throttle.set_throttle(throttle)
+        return False
 
 
     def _get_current_state(self):
