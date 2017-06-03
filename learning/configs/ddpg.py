@@ -80,9 +80,7 @@ class simulation(default):
 	render = False
 
 	# Where the model is loaded from
-	LOAD_DIR = None#"weights/ddpg/Tue-21-37/"#"weights/ddpg/Tue-20-28/"
-
-	# Where the model is saved to
+	LOAD_DIR = "weights/ddpg/Wed-01-06/" #"weights/ddpg/Tue-20-28/"
 	SAVE_DIR = "weights/ddpg/{0}/".format(timestamp())
 
 	# Soft target update param
