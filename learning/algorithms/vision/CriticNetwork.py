@@ -10,12 +10,13 @@ from keras.initializers import *
 from keras.optimizers import Adam
 from .VisionNetwork import VisionNetwork
 
-HIDDEN1_UNITS = 300
-HIDDEN2_UNITS = 600
+HIDDEN1_UNITS = 200
+HIDDEN2_UNITS = 400
 
 class CriticNetwork(object):
-    def __init__(self, sess, state_size, action_size, BATCH_SIZE, TAU, LEARNING_RATE):
+    def __init__(self, sess, config, state_size, action_size, BATCH_SIZE, TAU, LEARNING_RATE):
         self.sess = sess
+        self.config = config
         self.BATCH_SIZE = BATCH_SIZE
         self.TAU = TAU
         self.LEARNING_RATE = LEARNING_RATE
@@ -23,7 +24,6 @@ class CriticNetwork(object):
 
         K.set_session(sess)
 
-        #Now create the model
         self.model, self.action, self.state = self.create_critic_network(state_size, action_size)
         self.target_model, self.target_action, self.target_state = self.create_critic_network(state_size, action_size)
         self.action_grads = tf.gradients(self.model.output, self.action)  #GRADIENTS for policy update
@@ -47,18 +47,16 @@ class CriticNetwork(object):
         Create the critic network
         The network inputs are [sensors,frame,action]
         """
-        vision = VisionNetwork()
-        sensors = Input(shape=[state_size])
-        state = concatenate([vision.output, sensors])
+        vision = VisionNetwork(self.sess, self.config)
         action = Input(shape=[action_dim],name='action2')
 
-        w1 = Dense(HIDDEN1_UNITS, activation='relu')(state)
+        w1 = Dense(HIDDEN1_UNITS, activation='relu')(vision.output)
         a1 = Dense(HIDDEN2_UNITS, activation='linear')(action)
         h1 = Dense(HIDDEN2_UNITS, activation='linear')(w1)
         h2 = add([h1,a1])
         h3 = Dense(HIDDEN2_UNITS, activation='relu')(h2)
-        V = Dense(action_dim,activation='linear')(h3)
-        model = Model(inputs=[sensors,vision.input,action], outputs=V)
+        V = Dense(action_dim, activation='linear')(h3)
+        model = Model(inputs=[vision.input, action], outputs=V)
         adam = Adam(lr=self.LEARNING_RATE)
         model.compile(loss='mse', optimizer=adam)
-        return model, A, S
+        return model, action, vision.input

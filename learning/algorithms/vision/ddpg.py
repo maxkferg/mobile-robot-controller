@@ -1,26 +1,27 @@
-import os
+import json
+import timeit
 import random
 import argparse
 import numpy as np
+import tensorflow as tf
 from keras.models import model_from_json, Model
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.optimizers import Adam
-import tensorflow as tf
-import json
+from .ReplayBuffer import ReplayBuffer
+from .ActorNetwork import ActorNetwork
+from .CriticNetwork import CriticNetwork
+from .OU import OU
 
-from ReplayBuffer import ReplayBuffer
-from ActorNetwork import ActorNetwork
-from CriticNetwork import CriticNetwork
-from OU import OU
-import timeit
 
 OU = OU()       #Ornstein-Uhlenbeck Process
 
-def train(train_indicator=0, env, config):    #1 means Train, 0 means simply Run
+def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means simply Run
     action_dim = 2  # Steering/Acceleration
-    state_dim = 20  # Number of sensors
+    state_dim = 4  # Number of sensors input
+
     np.random.seed(1337)
+
     EXPLORE = 100000.
     episode_count = 2000
     max_steps = 100000
@@ -32,61 +33,61 @@ def train(train_indicator=0, env, config):    #1 means Train, 0 means simply Run
 
     # Tensorflow GPU optimization
     tfconfig = tf.ConfigProto()
-    config.gpu_options.allow_growth = True
+    tfconfig.gpu_options.allow_growth = True
     sess = tf.Session(config=tfconfig)
     from keras import backend as K
     K.set_session(sess)
 
-    actor = ActorNetwork(sess, state_dim, action_dim, config.batch_size, config.tau, config.actor_learning_rate)
-    critic = CriticNetwork(sess, state_dim, action_dim, config.batch_size, config.tau, config.critic_learning_rate)
+    actor = ActorNetwork(sess, config, state_dim, action_dim, config.batch_size, config.tau, config.actor_learning_rate)
+    critic = CriticNetwork(sess, config, state_dim, action_dim, config.batch_size, config.tau, config.critic_learning_rate)
     buff = ReplayBuffer(config.buffer_size)    #Create replay buffer
 
-    #Now load the weight
-    print("Load the weights")
     try:
-        actor_weights = os.path.join(config.load_dir,"actormodel.h5")
-        critic_weights = os.path.join(config.load_dir,,"criticmodel.h5")
+        print("Trying to load weights from ",config.load_dir)
+        actor_weights = os.path.join(config.save_dir,"actormodel.h5")
+        critic_weights = os.path.join(config.save_dir,"actormodel.h5")
         actor.model.load_weights(actor_weights)
         critic.model.load_weights(critic_weights)
         actor.target_model.load_weights(actor_weights)
         critic.target_model.load_weights(critic_weights)
         print("Weights loaded successfully")
     except:
-        print("Cannot find the weights")
+        print("Cannot weight files")
 
     print("Training...")
     for i in range(episode_count):
 
-        print("Episode: {0} Replay Buffer: {1} Epsilon:{2:.2f}".format(i, buff.count(), epsilon))
+        print("Episode: {0}, Replay Buffer: {1}, Epsilon: {2}".format(i, buff.count(), epsilon))
 
         car = env.reset()
-        total_reward = 0.
+        s_t = car.frames
 
+        total_reward = 0.
         for j in range(max_steps):
             loss = 0
             epsilon -= 1.0 / EXPLORE
             a_t = np.zeros([1,action_dim])
             noise_t = np.zeros([1,action_dim])
 
-            a_t_original = actor.model.predict([car.sensors, car.frame])
+            # Reshape because there is only one item in the batch
+            a_t_original = actor.model.predict(s_t[None,:])
             noise_t[0][0] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][0],  0.0 , 0.60, 0.30)
             noise_t[0][1] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][1],  0.5 , 1.00, 0.10)
-            noise_t[0][2] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][2], -0.1 , 1.00, 0.05)
-
-            #The following code do the stochastic brake
-            #if random.random() <= 0.1:
-            #    print("********Now we apply the brake***********")
-            #    noise_t[0][2] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][2],  0.2 , 1.00, 0.10)
 
             a_t[0][0] = a_t_original[0][0] + noise_t[0][0]
             a_t[0][1] = a_t_original[0][1] + noise_t[0][1]
 
+            # Take a new sample from the environment
             car, r_t, done, info = env.step(a_t[0])
 
-            buff.add(car, a_t[0], r_t, s_t1, done)      # Add replay buffer
+            # The camera frame becomes the state
+            s_t1 = car.frames
+
+            # Add to replay buffer
+            buff.add((s_t, a_t[0], r_t, s_t1, done))     
 
             # Do the batch update
-            batch = buff.getBatch(BATCH_SIZE)
+            batch = buff.getBatch(config.batch_size)
             states = np.asarray([e[0] for e in batch])
             actions = np.asarray([e[1] for e in batch])
             rewards = np.asarray([e[2] for e in batch])
@@ -119,12 +120,12 @@ def train(train_indicator=0, env, config):    #1 means Train, 0 means simply Run
             if done:
                 break
 
-        if np.mod(i, 3) == 0:
+        if np.mod(i+1, config.save_interval) == 0:
             if (train_indicator):
-                actor_weights = os.path.join(config.save_dir,"actormodel.h5")
-                actor_json = os.path.join(config.save_dir,"actormodel.json")
-                critic_weights = os.path.join(config.save_dir,"actormodel.h5")
-                critic_json = os.path.join(config.save_dir,,"criticmodel.json")
+                actor_weights = os.path.join(config.save_dir, "actormodel.h5")
+                actor_json = os.path.join(config.save_dir, "actormodel.json")
+                critic_weights = os.path.join(config.save_dir, "actormodel.h5")
+                critic_json = os.path.join(config.save_dir, "criticmodel.json")
 
                 actor.model.save_weights(actor_weights, overwrite=True)
                 with open(actor_json, "w") as outfile:
@@ -139,8 +140,8 @@ def train(train_indicator=0, env, config):    #1 means Train, 0 means simply Run
         print("Total Step: " + str(step))
         print("")
 
-    env.end()
-    print("Finished.")
+    env.end()  # This is for shutting down TORCS
+    print("Finish.")
 
 if __name__ == "__main__":
     playGame()

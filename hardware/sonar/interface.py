@@ -38,7 +38,7 @@ class Sonar():
         Take a single sonar reading. Add it to the reading buffer
         """
         samples = 1
-        while len(self.buffer)<self.sonar_sample_size+1
+        while len(self.buffer) < self.sonar_sample_size+1:
             distance = self.sensor.distance_meters(samples, self.sonar_sample_wait)
             self.buffer.insert(0,distance)
         self.buffer.pop()
@@ -50,7 +50,7 @@ class Sonar():
         Uses the reading buffer to estimate the current distance
         """
         sorted_distance = sorted(self.buffer)
-        return sorted_distance[self.sample_size // 2]
+        distance = sorted_distance[self.sonar_sample_size // 2]
         logger.info("{0} distance = {1:.2f} m".format(self.sensor_name, distance))
         return distance
 

@@ -1,10 +1,10 @@
 """
 NVIDIA Camera Driver
 Uses NVIDIA GPU acceleration to resize the camera image for learning
-"""
-__author__      = "Max Ferguson"
-__copyright__   = "Copyright 2017, Max Ferguson"
 
+Author: Max Ferguson
+License: MIT
+"""
 import sys
 import gi
 import numpy

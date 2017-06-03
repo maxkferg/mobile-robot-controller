@@ -1,60 +1,36 @@
 import argparse
 import tensorflow as tf
 from .configs import ddpg as ddpg_config
-from .configs import ddpg as sarsa_config
+from .configs import qlearning as qlearning_config
 from .environments import continuous, discrete
-from .algorithms.sarsa.schedule import LinearExploration, LinearSchedule
-from .algorithms.sarsa.linear import Linear
-from .algorithms.ddpg import DDPG
+from .algorithms.qlearning.linear import QNetwork
+from .algorithms.vision import ddpg
 
 
-def train_car_sarsa():
+def train_car_qlearning():
     """
     Train a q-learning agent using the simulation
     """
-    config = sarsa_config.linear
+    config = qlearning_config.linear
     env = RealEnvironment()
-    config.eps_begin = 0
-    config.eps_end = 0
-    config.eps_nsteps = 0
-    config.output_path  = "learning/results/q_learning/car/"
-    config.model_output = config.output_path + "model.weights/"
-    config.log_path     = config.output_path + "log.txt"
-    config.plot_output  = config.output_path + "scores.png"
-    config.nsteps_train = 100
-
-    # exploration strategy
-    exp_schedule = LinearExploration(env, config.eps_begin, config.eps_end, config.eps_nsteps)
-
-    # learning rate schedule
-    lr_schedule = LinearSchedule(config.lr_begin, config.lr_end, config.lr_nsteps)
-
-    # train
-    print("Training the CAR!")
     tf.reset_default_graph()
     model = Linear(env, config, resume=False)
     model.run(exp_schedule, lr_schedule)
 
 
 
-def train_simulation_sarsa():
+def train_simulation_qlearning():
     """
     Train a q-learning agent using the simulation
     """
-    config = sarsa_config.linear
+    config = qlearning_config.linear
 
     # Create simulated enviroment with discrete action space
-    env = discrete.SimulatedEnvironment(draw=draw)
-
-    # exploration strategy
-    exp_schedule = LinearExploration(env, config.eps_begin, config.eps_end, config.eps_nsteps)
-
-    # learning rate schedule
-    lr_schedule  = LinearSchedule(config.lr_begin, config.lr_end, config.lr_nsteps)
+    env = discrete.SimulatedEnvironment(draw=config.draw)
 
     # train
     model = Linear(env, config)
-    model.run(exp_schedule, lr_schedule)
+    model.run()
 
 
 
@@ -62,17 +38,10 @@ def train_simulation_ddpg():
     """
     Train a ddpg agent using the simulation
     """
+    train_indicator = 1
     config = ddpg_config.simulation
-    env = continuous.SimulatedEnvironment(render=config.render)
-
-    tfconfig = tf.ConfigProto()
-    tfconfig.gpu_options.per_process_gpu_memory_fraction = 0.05
-
-    with tf.Session() as sess:
-        tf.set_random_seed(config.RANDOM_SEED)
-        model = DDPG(sess, env, config)
-        model.train()
-        env.close()
+    env = continuous.SimulatedEnvironment(render=config.render) 
+    ddpg.vision_train(env, config, train_indicator)
 
 
 
@@ -80,14 +49,8 @@ def train_car_ddpg():
     """
     Train a ddpg agent using the simulation
     """
+    train_indicator = 1
     config = ddpg_config.simulation
     env = continuous.RealEnvironment(render=config.render)
+    ddpg.vision_train(env, config, train_indicator)
 
-    tfconfig = tf.ConfigProto()
-    tfconfig.gpu_options.per_process_gpu_memory_fraction = 0.05
-
-    with tf.Session(config=tfconfig) as sess:
-        tf.set_random_seed(config.RANDOM_SEED)
-        model = DDPG(sess, env, config)
-        model.train()
-        env.close()

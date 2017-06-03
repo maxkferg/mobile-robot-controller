@@ -9,19 +9,19 @@ from keras.initializers import *
 from keras.optimizers import Adam
 from .VisionNetwork import VisionNetwork
 
-HIDDEN1_UNITS = 300
-HIDDEN2_UNITS = 600
+HIDDEN1_UNITS = 200
+HIDDEN2_UNITS = 400
 
 class ActorNetwork(object):
-    def __init__(self, sess, state_size, action_size, BATCH_SIZE, TAU, LEARNING_RATE):
+    def __init__(self, sess, config, state_size, action_size, BATCH_SIZE, TAU, LEARNING_RATE):
         self.sess = sess
+        self.config = config
         self.BATCH_SIZE = BATCH_SIZE
         self.TAU = TAU
         self.LEARNING_RATE = LEARNING_RATE
 
         K.set_session(sess)
 
-        #Now create the model
         self.model , self.weights, self.state = self.create_actor_network(state_size, action_size)
         self.target_model, self.target_weights, self.target_state = self.create_actor_network(state_size, action_size)
         self.action_gradient = tf.placeholder(tf.float32,[None, action_size])
@@ -47,14 +47,12 @@ class ActorNetwork(object):
     def create_actor_network(self, state_size, action_dim):
         """Return the actor as a (input,output) tuple"""
         # Build the vision network
-        vision = VisionNetwork()
-        sensors = Input(shape=[state_size])
-        state = concatenate([vision.output, sensors])
-        hidden0 = Dense(HIDDEN1_UNITS, activation='relu')(state)
+        vision = VisionNetwork(self.sess, self.config)
+        hidden0 = Dense(HIDDEN1_UNITS, activation='relu')(vision.output)
         hidden1 = Dense(HIDDEN2_UNITS, activation='relu')(hidden0)
-        #remember to tune the wweights initialization
-        steering = Dense(1,activation='relu', kernel_initializer=TruncatedNormal(mean=0.0, stddev=0.05, seed=None))(hidden1)
-        throttle = Dense(1,activation='relu', kernel_initializer=TruncatedNormal(mean=0.0, stddev=0.05, seed=None))(hidden1)
+        # We use tanh nonlinearities because the output space should be between 0 and 1
+        steering = Dense(1,activation='tanh', kernel_initializer=TruncatedNormal(mean=0.0, stddev=0.05, seed=None))(hidden1)
+        throttle = Dense(1,activation='tanh', kernel_initializer=TruncatedNormal(mean=0.0, stddev=0.05, seed=None))(hidden1)
         controls = concatenate([steering, throttle])
-        model = Model(inputs=[sensors, vision.input], outputs=controls)
-        return model, model.trainable_weights, S
+        model = Model(inputs=vision.input, outputs=controls)
+        return model, model.trainable_weights, vision.input

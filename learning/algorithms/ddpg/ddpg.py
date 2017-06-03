@@ -17,7 +17,7 @@ import timeit
 
 OU = OU()       #Ornstein-Uhlenbeck Process
 
-def playGame(train_indicator=0,env,config):    #1 means Train, 0 means simply Run
+def ddpg_train(env, config, train_indicator=0):    #1 means Train, 0 means simply Run
     BUFFER_SIZE = 100000
     BATCH_SIZE = 33
     GAMMA = 0.99

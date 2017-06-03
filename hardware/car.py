@@ -11,12 +11,13 @@ class CarState:
     """
     Compact representation of the car state
     """
-    def __init__(steering,throttle,front_distance,rear_distance,frame):
+    def __init__(self,steering,throttle,front_distance,rear_distance,frames):
         self.steering = steering
         self.throttle = throttle
         self.front_distance = front_distance
         self.rear_distance = rear_distance
-        self.frame = frame
+        self.sensors = [steering, throttle, front_distance, rear_distance]
+        self.frames = frames
 
 
 class Car:

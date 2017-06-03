@@ -17,7 +17,7 @@ class CarSimulation:
     """
     env_width = 1000
     env_height = 700
-    sonar_scale = 10
+    sonar_scale = 0.1
     steering_scale = 0.05
     throttle_scale = 100
 

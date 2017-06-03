@@ -5,8 +5,13 @@ Uses NVIDIA GPU acceleration to resize the camera image for learning
 Author: Max Ferguson
 License: MIT
 """
-from .drivers import TX1
+import os
 
+# Load module depending on development
+if os.environ.get('DEV'):
+    from .drivers import Mock as TX1
+else:
+    from .drivers import TX1
 
 
 class Camera:
@@ -14,6 +19,7 @@ class Camera:
     An interface to the NVIDIA camera
     Return camera frames as numpy arrays
     """
+    image_shape  = (360, 640, 3)
 
     def __del__(self):
         """

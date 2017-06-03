@@ -28,21 +28,13 @@ import random
 import logging
 import numpy as np
 from builtins import range
-from hardware.car import car
+from hardware.car import CarState, car
+from hardware.camera import Camera
 from .utils.buffer import VectorBuffer
 from .simulation.car import CarSimulation
 
 # Setup a logger for this module
 logger = logging.getLogger(__name__)
-
-
-def normalize_sonar(sonar):
-    """
-    Normalize the sonar values before adding them to the state
-    The NN is initialized assuming that the state values are about 1
-    Normalizing the sonar helps to improve the initial policy
-    """
-    return sonar/100 # Convert to meters
 
 
 class ActionSpace:
@@ -61,7 +53,7 @@ class ObservationSpace:
     """
     Represents the observations which can be made
     """
-    shape = (40,1)
+    shape = (360, 640, 3)
 
 
 class ContinuousEnvironment:
@@ -69,17 +61,17 @@ class ContinuousEnvironment:
     Continuous simulated environment
     Base class for simulated and real implimentations
     """
-    action_history = 50
-    state_history = 10
+    action_history_size = 50
+    sensor_history_size = 10
     action_space = ActionSpace()
-    observation_space =  ObservationSpace()
+    observation_space = ObservationSpace()
 
     def __init__(self, render=False, seed=0):
         self.steps = 0
         self.resets = 0
         self.should_render = render
-        self.state_history = VectorBuffer((self.state_history, 4))
-        self.action_history = VectorBuffer((self.action_history, 2))
+        self.sensor_history = VectorBuffer((self.sensor_history_size, 4))
+        self.action_history = VectorBuffer((self.action_history_size, 2))
         self.seed(seed)
 
 
@@ -108,22 +100,23 @@ class ContinuousEnvironment:
         done = self._is_done(state)
 
         self.action_history.add(action)
-        self.state_history.add(state)
+        self.sensor_history.add(state.sensors)
         self.steps += 1
 
-        state_with_history = self.state_history.to_array()
-        return (state_with_history,reward,done,False)
+        return (state, reward, done, False)
 
 
     def reset(self):
         """
         Reset the environment
+        Return the current camera image
         """
+        state = self._get_current_state()
         self.car.reset()
         self.resets += 1
         self.action_history.clean()
-        self.state_history.clean(self._get_current_state())
-        return self.state_history.to_array()
+        self.sensor_history.clean(state.sensors)
+        return state
 
 
     def close(self):
@@ -137,9 +130,8 @@ class ContinuousEnvironment:
         """
         Return True if we think the car is crashed
         """
-        sonar = np.array(state[2:4])
-        if any(sonar<0.2):
-            return True
+        threshold = 0.2
+        return state.front_distance<threshold or state.rear_distance<threshold
 
 
     def _is_done(self,state):
@@ -175,9 +167,9 @@ class ContinuousEnvironment:
         @param state: An object describing the car state
         """
         # Extract state parameters
-        rotation = state[0]
-        throttle = state[1]
-        sonar = state[2:4]
+        rotation = state.steering
+        throttle = state.throttle
+        sonar = [state.front_distance, state.rear_distance]
         steering_history = self.action_history.to_array()[:,0]
         # Penalize collisions heavily
         if self._is_crashed(state):
@@ -240,11 +232,11 @@ class SimulatedEnvironment(ContinuousEnvironment):
         # Take measurements
         steering = self.car.steering
         throttle = self.car.throttle
-        rear_sonar = normalize_sonar(self.car.rear_sonar)
-        front_sonar = normalize_sonar(self.car.front_sonar)
-        # Create R3 state vector representation
-        return [steering,throttle,front_sonar,rear_sonar]
-
+        rear_distance = self.car.rear_sonar
+        front_distance = self.car.front_sonar
+        frames = np.random.randint(low=0, high=255, size=Camera.image_shape, dtype=int)
+        # Return a simulated variant on the real car state
+        return CarState(steering,throttle,front_distance,rear_distance,frames)
 
 
 
@@ -286,7 +278,7 @@ class RealEnvironment(ContinuousEnvironment):
         """
         is_crashed = super()._is_crashed(state)
         for i in range(n-1):
-            state = self.state_history.items[i,:]
+            state = self.sensor_history.items[i,:]
             is_crashed = is_crashed and super()._is_crashed(state)
         return is_crashed
 
@@ -295,12 +287,6 @@ class RealEnvironment(ContinuousEnvironment):
         """
         Return the current state
         """
-        # Take measurements
-        #steering = self.car.steering.get_rotation()
-        #throttle = self.car.throttle.get_throttle()
-        #rear_sonar = normalize_sonar(self.car.rear_sonar.distance())
-        #front_sonar = normalize_sonar(self.car.front_sonar.distance())
-        # Create R3 state vector representation
         return self.car.get_state()
 
 

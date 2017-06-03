@@ -21,7 +21,7 @@ class VectorBuffer:
 		"""
 		vector = np.array(vector)
 		if vector.shape != self.size[1:]:
-			raise ValueError("Expected vector of size",size[1:])
+			raise ValueError("Expected vector of size {0}. Got {1}".format(self.size[1:],vector.shape))
 		self.items = np.roll(self.items, shift=1, axis=0)
 		self.items[0,:] = vector
 

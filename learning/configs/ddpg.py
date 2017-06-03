@@ -38,7 +38,9 @@ class default:
 	tau = 0.001  # Paper uses 0.001
 
 	# Size of replay buffer
-	buffer_size = 100000
+	buffer_size = 1000
+
+	# Training minibatch size
 	batch_size = 64
 
 	# Exploration parameters
@@ -53,12 +55,16 @@ class default:
 class simulation(default):
 
 	# Whether we should render the environment
-	render = False
+	render = True
 
 	# Where the model is loaded from
-	load_dir = "weights/torc/load"
+	load_dir = "weights/vision/load"
 
 	# Where the model is saved to
-	save_dir = "weights/torc/{0}/".format(timestamp())
+	save_dir = "weights/vision/{0}/".format(timestamp())
 
-	batch_size = 64
+	# Use 1 to train the model and 0 to test
+	learning_phase = 1
+
+	# How often to save the model
+	save_interval = 100
