@@ -296,12 +296,12 @@ class RealEnvironment(ContinuousEnvironment):
         Return the current state
         """
         # Take measurements
-        steering = self.car.steering.get_rotation()
-        throttle = self.car.throttle.get_throttle()
-        rear_sonar = normalize_sonar(self.car.rear_sonar.distance())
-        front_sonar = normalize_sonar(self.car.front_sonar.distance())
+        #steering = self.car.steering.get_rotation()
+        #throttle = self.car.throttle.get_throttle()
+        #rear_sonar = normalize_sonar(self.car.rear_sonar.distance())
+        #front_sonar = normalize_sonar(self.car.front_sonar.distance())
         # Create R3 state vector representation
-        return [steering,throttle,front_sonar,rear_sonar]
+        return self.car.get_state()
 
 
 

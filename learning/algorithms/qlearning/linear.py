@@ -9,10 +9,21 @@ from .schedule import LinearExploration, LinearSchedule
 
 
 
-class Linear(DQN):
+class QNetwork(DQN):
     """
     Implement Fully Connected with Tensorflow
     """
+
+    def __init__(self, env, config, resume=False, logger=None):
+        """
+        Initialize the exploration schedule and the learning rate schedule
+        """
+        #self.config = config
+        self.exp_schedule = LinearExploration(env, config.eps_begin, config.eps_end, config.eps_nsteps)
+        self.lr_schedule  = LinearSchedule(config.lr_begin, config.lr_end, config.lr_nsteps)
+        super().__init__(env, config, resume, logger)
+
+
     def add_placeholders_op(self):
         """
         Adds placeholders to the graph
@@ -104,7 +115,7 @@ class Linear(DQN):
             state = layers.flatten(state)
             hidden = layers.fully_connected(
                 inputs=state,
-                num_outputs=config.n_hidden_layers,
+                num_outputs=self.config.n_hidden_layers,
                 activation_fn=tf.nn.relu, # linear
                 trainable=True
             )

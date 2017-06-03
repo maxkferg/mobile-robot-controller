@@ -329,7 +329,7 @@ class QN(object):
         self.evaluate(env, 1)
 
 
-    def run(self, exp_schedule, lr_schedule):
+    def run(self):
         """
         Apply procedures of training for a QN
 
@@ -345,7 +345,7 @@ class QN(object):
             self.record()
 
         # model
-        self.train(exp_schedule, lr_schedule)
+        self.train(self.exp_schedule, self.lr_schedule)
 
         # record one game at the end
         if self.config.record:

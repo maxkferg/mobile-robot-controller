@@ -1,6 +1,7 @@
 
-class linear():
+class default():
     # env config
+    render           = True
     render_train     = False
     render_test      = False
     overwrite_render = True
@@ -8,7 +9,7 @@ class linear():
     high             = 255.
 
     # output config
-    output_path  = "learning/results/q_learning/linear/"
+    output_path  = "learning/results/q_learning/"
     model_output = output_path + "model.weights/"
     log_path     = output_path + "log.txt"
     plot_output  = output_path + "scores.png"
