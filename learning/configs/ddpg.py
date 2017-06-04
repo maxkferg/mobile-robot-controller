@@ -63,6 +63,9 @@ class simulation(default):
 	# Where the model is saved to
 	save_dir = "weights/vision/"
 
+	# Where to save the image
+	image_dir = "weights/vision/frame.jpg"
+
 	# Use 1 to train the model and 0 to test
 	learning_phase = 1
 

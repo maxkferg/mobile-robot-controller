@@ -61,12 +61,15 @@ def imitation(actor, state,  previous_action):
     return action, crashed
 
 
-def save_state(car):
+def save_state(car,path):
     """
     Save the state as an image
     """
+    bgr = car.frames
+    rgb = bgr[:,:,::-1]
     im = Image.fromarray(car.frames)
-    im.save("weights/vision/frame.jpeg")
+    im.save(path)
+    print("Saved first frame to ",path)
 
 
 def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means simply Run
@@ -119,7 +122,7 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
         a_t_original = np.zeros((1,2))
 
         # Save a camera image
-        save_state(car)
+        save_state(car, config.image_path)
 
         total_reward = 0
         for j in range(max_steps):
