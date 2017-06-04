@@ -216,7 +216,7 @@ class Throttle(PWM):
         Return the new (limited) speed
         """
 
-        forward_max = 0.48
+        forward_max = 0.56
         backward_max = -0.35
 
         if speed < backward_max:
@@ -232,8 +232,8 @@ class Throttle(PWM):
         Certain PWM frequencies will cause damage, so we block them
         """
         pwm_stall_min = 1.40 # ms
-        pwm_stall_max = 1.63 # ms
-        pwm_stopped = 1.55 # ms
+        pwm_stall_max = 1.64 # ms
+        pwm_stopped = 1.58 # ms
         if pwm_stall_min < pulse and pulse < pwm_stall_max:
             pulse = pwm_stopped
         assert pulse >= self.pwm_min_pulse # Sanity check

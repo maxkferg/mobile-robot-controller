@@ -31,11 +31,11 @@ def imitation(actor, state,  previous_action):
     if command.strip().lower()=="w":
         # Forward
         action[0,0] = 0
-        action[0,1] = 0.47
+        action[0,1] = 0.50
     elif command.strip().lower()=="a":
         # Left
         action[0,0] = 0.9
-        action[0,1] = 0.45
+        action[0,1] = 0.49
     elif command.strip().lower()=="s":
         # Reverse
         action[0,0] = 0
@@ -43,7 +43,7 @@ def imitation(actor, state,  previous_action):
     elif command.strip().lower()=="d":
         # Right
         action[0,0] = -0.9
-        action[0,1] = 0.45
+        action[0,1] = 0.49
     elif command.strip().lower()=="c":
         # Crashed
         action[0,0] = 0
