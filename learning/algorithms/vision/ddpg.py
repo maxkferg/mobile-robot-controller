@@ -77,6 +77,9 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
             a_t[0][0] = a_t_original[0][0] + noise_t[0][0]
             a_t[0][1] = a_t_original[0][1] + noise_t[0][1]
 
+            a_t[0][0] = 1.0
+            a_t[0][1] = 0.4
+
             # Take a new sample from the environment
             car, r_t, done, info = env.step(a_t[0])
 
