@@ -24,23 +24,29 @@ def imitation():
     Imitation learning controller
     """
     crashed = False
-    command = input("Action?")
-    if command=="w":
-        steering = 0
-        throttle = 0.40
-    if command=="a":
-        steering = 0.9
-        throttle = 0.45
-    if command=="s":
-        steering = 0
-        throttle = -0.45
-    if command=="d":
-        steering = -0.9
-        throttle = 0.45
-    if command==" ":
-        steering = 0
-        throttle = 0
-        crashed = True  
+    while True:
+        command = input("Action?")
+        if command.strip().lower()=="w":
+            steering = 0
+            throttle = 0.40
+            break
+        if command.strip().lower()=="a":
+            steering = 0.9
+            throttle = 0.45
+            break
+        if command.strip().lower()=="s":
+            steering = 0
+            throttle = -0.45
+            break
+        if command.strip().lower()=="d":
+            steering = -0.9
+            throttle = 0.45
+            break
+        if command.strip().lower()=="c":
+            steering = 0
+            throttle = 0
+            crashed = True  
+            break
     action = np.array([[steering],[throttle]])
     return action, crashed
 
