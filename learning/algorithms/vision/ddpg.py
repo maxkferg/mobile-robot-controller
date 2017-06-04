@@ -17,6 +17,35 @@ from .OU import OU
 
 OU = OU()       #Ornstein-Uhlenbeck Process
 
+
+
+def imitation():
+    """
+    Imitation learning controller
+    """
+    crashed = False
+    command = input("Action?")
+    if command=="w":
+        steering = 0
+        throttle = 0.40
+    if command=="a":
+        steering = 0.9
+        throttle = 0.45
+    if command=="s":
+        steering = 0
+        throttle = -0.45
+    if command=="d":
+        steering = -0.9
+        throttle = 0.45
+    if command==" ":
+        steering = 0
+        throttle = 0
+        crashed = True  
+    action = np.array([[steering],[throttle]])
+    return action, crashed
+
+
+
 def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means simply Run
     action_dim = 2  # Steering/Acceleration
     state_dim = 4  # Number of sensors input
@@ -71,7 +100,11 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
             noise_t = np.zeros([1,action_dim])
 
             # Reshape because there is only one item in the batch
-            a_t_original = actor.model.predict(s_t[None,:])
+            # a_t_original = actor.model.predict(s_t[None,:])
+
+            # Try imitation learning
+            a_t_original, crashed = imitation() 
+
             noise_t[0][0] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][0],  0.0 , 0.60, 0.30)
             noise_t[0][1] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][1],  0.5 , 1.00, 0.10)
 
@@ -80,6 +113,11 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
 
             # Take a new sample from the environment
             car, r_t, done, info = env.step(a_t[0])
+
+            # Patch the reward ect
+            if crashed:
+                r_t = -2
+                done = True
 
             # The camera frame becomes the state
             s_t1 = car.frames
