@@ -101,6 +101,7 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
 
         total_reward = 0.
         for j in range(max_steps):
+
             loss = 0
             epsilon -= 1.0 / EXPLORE
             a_t = np.zeros([1,action_dim])
@@ -112,8 +113,8 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
             # Try imitation learning
             a_t_original, crashed = imitation() 
 
-            noise_t[0][0] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][0],  0.0 , 0.60, 0.30)
-            noise_t[0][1] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][1],  0.5 , 1.00, 0.10)
+            noise_t[0][0] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][0],  0.0 , 0.30, 0.10)
+            noise_t[0][1] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][1],  0.0 , 0.30, 0.10)
 
             a_t[0][0] = a_t_original[0][0] + noise_t[0][0]
             a_t[0][1] = a_t_original[0][1] + noise_t[0][1]
@@ -132,7 +133,20 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
             # Add to replay buffer
             buff.add((s_t, a_t[0], r_t, s_t1, done))     
 
-            # Do the batch update
+            total_reward += r_t
+            s_t = s_t1
+
+            print("Episode", i, "Step", step, "Action", a_t, "Reward", r_t, "Loss", loss)
+
+            step += 1
+            if done:
+                break
+
+        # Do the batch update
+        # This is outside of the control loop for performance reasons
+        print("Running the batch update algorithm...")
+        for i in range(30):
+            print(".",end="")
             batch = buff.getBatch(config.batch_size)
             states = np.asarray([e[0] for e in batch])
             actions = np.asarray([e[1] for e in batch])
@@ -156,18 +170,11 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
                 actor.train(states, grads)
                 actor.target_train()
                 critic.target_train()
-
-            total_reward += r_t
-            s_t = s_t1
-
-            print("Episode", i, "Step", step, "Action", a_t, "Reward", r_t, "Loss", loss)
-
-            step += 1
-            if done:
-                break
+        print("Completed the batch update")
 
         if np.mod(i+1, config.save_interval) == 0:
             if (train_indicator):
+                print("Saving the weights...")
                 actor_weights = os.path.join(config.save_dir, "actormodel.h5")
                 actor_json = os.path.join(config.save_dir, "actormodel.json")
                 critic_weights = os.path.join(config.save_dir, "actormodel.h5")
