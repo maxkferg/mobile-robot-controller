@@ -67,7 +67,7 @@ def save_state(car,path):
     """
     bgr = car.frames
     rgb = bgr[:,:,::-1]
-    im = Image.fromarray(car.frames)
+    im = Image.fromarray(rgb)
     im.save(path)
     print("Saved first frame to ",path)
 
