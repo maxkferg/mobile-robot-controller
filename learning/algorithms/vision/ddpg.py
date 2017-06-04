@@ -47,7 +47,8 @@ def imitation():
             throttle = 0
             crashed = True  
             break
-    action = np.array([[steering],[throttle]])
+    action = np.array([steering,throttle])
+    action = action[None,:]
     return action, crashed
 
 
