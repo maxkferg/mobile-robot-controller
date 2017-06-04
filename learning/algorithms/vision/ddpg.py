@@ -149,10 +149,15 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
             if done:
                 break
 
+        # Print summary statistics for this batch
+        print("TOTAL REWARD @ " + str(i) +"-th Episode  : Reward " + str(total_reward))
+        print("Total Step: " + str(step))
+        print("")
+
         # Do the batch update
         # This is outside of the control loop for performance reasons
         print("Running the batch update algorithm...")
-        for i in range(10):
+        for j in range(10):
             loss = 0
             batch = buff.getBatch(config.batch_size)
             states = np.asarray([e[0] for e in batch])
@@ -196,10 +201,6 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
                 with open(critic_json, "w") as outfile:
                     json.dump(critic.model.to_json(), outfile)
                 print("Saved weights to {0}".format(config.save_dir))
-
-        print("TOTAL REWARD @ " + str(i) +"-th Episode  : Reward " + str(total_reward))
-        print("Total Step: " + str(step))
-        print("")
 
     env.end()  # This is for shutting down TORCS
     print("Finish.")
