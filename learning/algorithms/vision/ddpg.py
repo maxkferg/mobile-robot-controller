@@ -20,38 +20,43 @@ OU = OU()       #Ornstein-Uhlenbeck Process
 
 
 
-def imitation():
+def imitation(actor, state,  previous_action):
     """
     Imitation learning controller
     """
     crashed = False
-    while True:
-        print("Action? ", end="")
-        command = keys.wait()
-        print("")
-        if command.strip().lower()=="w":
-            steering = 0
-            throttle = 0.40
-            break
-        if command.strip().lower()=="a":
-            steering = 0.9
-            throttle = 0.45
-            break
-        if command.strip().lower()=="s":
-            steering = 0
-            throttle = -0.45
-            break
-        if command.strip().lower()=="d":
-            steering = -0.9
-            throttle = 0.45
-            break
-        if command.strip().lower()=="c":
-            steering = 0
-            throttle = 0
-            crashed = True  
-            break
-    action = np.array([steering,throttle])
-    action = action[None,:]
+    action = previous_action
+    command = keys.wait() or ""
+
+    if command.strip().lower()=="w":
+        # Forward
+        action[0,0] = 0
+        action[0,1] = 0.47
+    elif command.strip().lower()=="a":
+        # Left
+        action[0,0] = 0.9
+        action[0,1] = 0.45
+    elif command.strip().lower()=="s":
+        # Reverse
+        action[0,0] = 0
+        action[0,1] = -0.45
+    elif command.strip().lower()=="d":
+        # Right
+        action[0,0] = -0.9
+        action[0,1] = 0.45
+    elif command.strip().lower()=="c":
+        # Crashed
+        action[0,0] = 0
+        action[0,1] = 0
+        crashed = True  
+    elif command.strip().lower()=="f":
+        # Let the AI drive
+        action = actor.model.predict(state[None,:])
+    else:
+        # Stopped
+        action[0,0] = 0
+        action[0,1] = 0
+    print(action)
     return action, crashed
 
 
@@ -92,15 +97,17 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
         critic.target_model.load_weights(critic_weights)
         print("Weights loaded successfully")
     except:
-        print("Cannot weight files")
+        print("Cannot load weight files")
 
     print("Training...")
     for i in range(episode_count):
 
         print("Episode: {0}, Replay Buffer: {1}, Epsilon: {2}".format(i, buff.count(), epsilon))
+        input("Press <enter> to start this episode")
 
         car = env.reset()
         s_t = car.frames
+        a_t_original = np.zeros((1,2))
 
         total_reward = 0.
         for j in range(max_steps):
@@ -110,11 +117,8 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
             a_t = np.zeros([1,action_dim])
             noise_t = np.zeros([1,action_dim])
 
-            # Reshape because there is only one item in the batch
-            # a_t_original = actor.model.predict(s_t[None,:])
-
             # Try imitation learning
-            a_t_original, crashed = imitation() 
+            a_t_original, crashed = imitation(actor, s_t, a_t_original) 
 
             noise_t[0][0] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][0],  0.0 , 0.30, 0.0)
             noise_t[0][1] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][1],  0.0 , 0.30, 0.10)
@@ -149,7 +153,7 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
         # This is outside of the control loop for performance reasons
         print("Running the batch update algorithm...")
         for i in range(10):
-            print(".", end="",flush=True)
+            loss = 0
             batch = buff.getBatch(config.batch_size)
             states = np.asarray([e[0] for e in batch])
             actions = np.asarray([e[1] for e in batch])
@@ -173,6 +177,7 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
                 actor.train(states, grads)
                 actor.target_train()
                 critic.target_train()
+            print("Loss: {0:.3f}".format(loss),flush=True)
         print("\nCompleted the batch update")
 
         if np.mod(i+1, config.save_interval) == 0:

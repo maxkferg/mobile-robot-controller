@@ -178,10 +178,9 @@ class ContinuousEnvironment:
             return -1 - 1 * abs(throttle)
         # Calculate reward
         reward = 0
-        reward += 0.004 * max(0, throttle) # Favor driving forward
-        reward += 0.001 * min(0, throttle) # Penalize reversing
-        reward += 0.001 * abs(rotation) # Penalize turning
-        reward += 0.0001 * np.sum(sonar) # Favor larger sonar values
+        reward += 0.04 * max(0, throttle)    # Favor driving forward
+        reward -= 0.01 * min(0, throttle)    # Reward reversing
+        reward += 0.001 * np.sum(sonar)      # Favor larger sonar values
         assert isinstance(reward,float)
         return reward
 
