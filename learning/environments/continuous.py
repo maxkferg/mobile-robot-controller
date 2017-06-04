@@ -96,8 +96,9 @@ class ContinuousEnvironment:
         self._take_action(action)
         self.render()
         state = self._get_current_state()
-        reward = self._get_reward(state)
-        done = self._is_done(state)
+        crashed = self._is_crashed(state) 
+        reward = self._get_reward(state,crashed)
+        done = self._is_done(state,crashed)
 
         self.action_history.add(action)
         self.sensor_history.add(state.sensors)
@@ -135,11 +136,11 @@ class ContinuousEnvironment:
         return state.front_distance<threshold or state.rear_distance<threshold
 
 
-    def _is_done(self,state):
+    def _is_done(self,state,crashed):
         """
         Return True if this episode is done
         """
-        if self._is_crashed(state):
+        if crashed:
             logger.info("CRASHED")
             return True
         if self.steps % 500==0:
@@ -162,7 +163,7 @@ class ContinuousEnvironment:
         raise NotImplementedError
 
 
-    def _get_reward(self,state):
+    def _get_reward(self,state,crashed):
         """
         Return the reward associated with @state
         @param state: An object describing the car state
@@ -173,7 +174,7 @@ class ContinuousEnvironment:
         sonar = [state.front_distance, state.rear_distance]
         steering_history = self.action_history.to_array()[:,0]
         # Penalize collisions heavily
-        if self._is_crashed(state):
+        if crashed:
             return -1 - 1 * abs(throttle)
         # Calculate reward
         reward = 0
@@ -215,7 +216,6 @@ class SimulatedEnvironment(ContinuousEnvironment):
         """
         Notify the user that the simulation has been reset
         """
-        logger.info("Environment Reset")
         return super().reset()
 
 
@@ -254,6 +254,14 @@ class RealEnvironment(ContinuousEnvironment):
         """
         super().__init__(render,seed)
         self.car = car
+
+
+    def reset(self):
+        """
+        Notify the user that the simulation has been reset
+        """
+        super().reset()
+        input("Reset the car and then press enter")
 
 
     def _take_action(self,action):
