@@ -90,7 +90,7 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
     try:
         print("Trying to load weights from ",config.load_dir)
         actor_weights = os.path.join(config.save_dir,"actormodel.h5")
-        critic_weights = os.path.join(config.save_dir,"actormodel.h5")
+        critic_weights = os.path.join(config.save_dir,"criticmodel.h5")
         actor.model.load_weights(actor_weights)
         critic.model.load_weights(critic_weights)
         actor.target_model.load_weights(actor_weights)
@@ -185,7 +185,7 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
                 print("Saving the weights...")
                 actor_weights = os.path.join(config.save_dir, "actormodel.h5")
                 actor_json = os.path.join(config.save_dir, "actormodel.json")
-                critic_weights = os.path.join(config.save_dir, "actormodel.h5")
+                critic_weights = os.path.join(config.save_dir, "criticmodel.h5")
                 critic_json = os.path.join(config.save_dir, "criticmodel.json")
 
                 actor.model.save_weights(actor_weights, overwrite=True)
