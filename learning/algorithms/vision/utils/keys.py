@@ -10,11 +10,13 @@ def wait():
     oldflags = fcntl.fcntl(fd, fcntl.F_GETFL)
     fcntl.fcntl(fd, fcntl.F_SETFL, oldflags | os.O_NONBLOCK)
 
-    character = ""
+    character = None
     try:
-        character = sys.stdin.read(1)
-    except IOError as e: 
-        pass
+        while not character:
+            try:
+                character = sys.stdin.read(1)
+            except IOError as e: 
+                pass
     finally:
         termios.tcsetattr(fd, termios.TCSAFLUSH, oldterm)
         fcntl.fcntl(fd, fcntl.F_SETFL, oldflags)
