@@ -67,7 +67,7 @@ class ContinuousEnvironment:
     observation_space = ObservationSpace()
 
     def __init__(self, render=False, seed=0):
-        self.steps = 0
+        self.steps = 1
         self.resets = 0
         self.should_render = render
         self.sensor_history = VectorBuffer((self.sensor_history_size, 4))

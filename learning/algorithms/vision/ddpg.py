@@ -9,6 +9,7 @@ from keras.models import model_from_json, Model
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.optimizers import Adam
+from .utils import keys
 from .ReplayBuffer import ReplayBuffer
 from .ActorNetwork import ActorNetwork
 from .CriticNetwork import CriticNetwork
@@ -25,7 +26,9 @@ def imitation():
     """
     crashed = False
     while True:
-        command = input("Action?")
+        print("Action? ", end="")
+        command = keys.wait()
+        print("")
         if command.strip().lower()=="w":
             steering = 0
             throttle = 0.40
@@ -113,7 +116,7 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
             # Try imitation learning
             a_t_original, crashed = imitation() 
 
-            noise_t[0][0] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][0],  0.0 , 0.30, 0.10)
+            noise_t[0][0] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][0],  0.0 , 0.30, 0.0)
             noise_t[0][1] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][1],  0.0 , 0.30, 0.10)
 
             a_t[0][0] = a_t_original[0][0] + noise_t[0][0]
@@ -145,8 +148,8 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
         # Do the batch update
         # This is outside of the control loop for performance reasons
         print("Running the batch update algorithm...")
-        for i in range(30):
-            print(".",end="")
+        for i in range(10):
+            print(".", end="",flush=True)
             batch = buff.getBatch(config.batch_size)
             states = np.asarray([e[0] for e in batch])
             actions = np.asarray([e[1] for e in batch])
@@ -170,7 +173,7 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
                 actor.train(states, grads)
                 actor.target_train()
                 critic.target_train()
-        print("Completed the batch update")
+        print("\nCompleted the batch update")
 
         if np.mod(i+1, config.save_interval) == 0:
             if (train_indicator):
