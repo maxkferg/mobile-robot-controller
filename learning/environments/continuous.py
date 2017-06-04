@@ -260,7 +260,6 @@ class RealEnvironment(ContinuousEnvironment):
         """
         Notify the user that the simulation has been reset
         """
-        input("Reset the car and then press enter")
         return super().reset()
 
 
