@@ -233,7 +233,7 @@ class Throttle(PWM):
         """
         pwm_stall_min = 1.40 # ms
         pwm_stall_max = 1.64 # ms
-        pwm_stopped = 1.58 # ms
+        pwm_stopped = 1.52 # ms
         if pwm_stall_min < pulse and pulse < pwm_stall_max:
             pulse = pwm_stopped
         assert pulse >= self.pwm_min_pulse # Sanity check
