@@ -58,13 +58,16 @@ class simulation(default):
 	render = True
 
 	# Where the model is loaded from
-	load_dir = "weights/vision/load"
+	load_dir = "weights/vision/"
 
 	# Where the model is saved to
-	save_dir = "weights/vision/{0}/".format(timestamp())
+	save_dir = "weights/vision/"
 
 	# Use 1 to train the model and 0 to test
 	learning_phase = 1
 
+	# Exploration noise
+	epsilon = 0.3
+
 	# How often to save the model
-	save_interval = 20
+	save_interval = 3
