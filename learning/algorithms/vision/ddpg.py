@@ -96,8 +96,8 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
         actor.target_model.load_weights(actor_weights)
         critic.target_model.load_weights(critic_weights)
         print("Weights loaded successfully")
-    except:
-        print("Cannot load weight files")
+    except Exception as e:
+        print("Cannot load weight files: ",e)
 
     print("Training...")
     for i in range(episode_count):
