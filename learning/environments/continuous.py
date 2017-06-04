@@ -260,8 +260,8 @@ class RealEnvironment(ContinuousEnvironment):
         """
         Notify the user that the simulation has been reset
         """
-        super().reset()
         input("Reset the car and then press enter")
+        return super().reset()
 
 
     def _take_action(self,action):
