@@ -38,10 +38,10 @@ class default:
 	tau = 0.001  # Paper uses 0.001
 
 	# Size of replay buffer
-	buffer_size = 1000
+	buffer_size = 100
 
 	# Training minibatch size
-	batch_size = 64
+	batch_size = 32
 
 	# Exploration parameters
 	ou_mu = 0.0
@@ -67,4 +67,4 @@ class simulation(default):
 	learning_phase = 1
 
 	# How often to save the model
-	save_interval = 100
+	save_interval = 20
