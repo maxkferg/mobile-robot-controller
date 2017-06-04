@@ -9,6 +9,7 @@ from keras.models import model_from_json, Model
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.optimizers import Adam
+from PIL import Image
 from .utils import keys
 from .ReplayBuffer import ReplayBuffer
 from .ActorNetwork import ActorNetwork
@@ -60,6 +61,13 @@ def imitation(actor, state,  previous_action):
     return action, crashed
 
 
+def save_state(car):
+    """
+    Save the state as an image
+    """
+    im = Image.fromarray(car.frames)
+    im.save("weights/vision/frame.jpeg")
+
 
 def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means simply Run
     action_dim = 2  # Steering/Acceleration
@@ -85,7 +93,7 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
 
     actor = ActorNetwork(sess, config, state_dim, action_dim, config.batch_size, config.tau, config.actor_learning_rate)
     critic = CriticNetwork(sess, config, state_dim, action_dim, config.batch_size, config.tau, config.critic_learning_rate)
-    buff = ReplayBuffer(config.buffer_size)    #Create replay buffer
+    buff = ReplayBuffer(config.buffer_size)  # Create replay buffer
 
     try:
         print("Trying to load weights from ",config.load_dir)
@@ -105,13 +113,16 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
         print("Episode: {0}, Replay Buffer: {1}, Epsilon: {2}".format(i, buff.count(), epsilon))
         input("Press <enter> to start this episode")
 
+        # Setup the initial parameters
         car = env.reset()
         s_t = car.frames
         a_t_original = np.zeros((1,2))
 
-        total_reward = 0.
-        for j in range(max_steps):
+        # Save a camera image
+        save_state(car)
 
+        total_reward = 0
+        for j in range(max_steps):
             loss = 0
             epsilon -= 1.0 / EXPLORE
             a_t = np.zeros([1,action_dim])
@@ -175,7 +186,7 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
                 else:
                     y_t[k] = rewards[k] + config.gamma*target_q_values[k]
 
-            if (train_indicator):
+            if train_indicator:
                 loss += critic.model.train_on_batch([states,actions], y_t)
                 a_for_grad = actor.model.predict(states)
                 grads = critic.gradients(states, a_for_grad)
@@ -185,7 +196,7 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
             print("Loss: {0:.3f}".format(loss),flush=True)
         print("\nCompleted the batch update")
 
-        if np.mod(i+1, config.save_interval) == 0:
+        if np.mod(i, config.save_interval) == 0:
             if (train_indicator):
                 print("Saving the weights...")
                 actor_weights = os.path.join(config.save_dir, "actormodel.h5")
