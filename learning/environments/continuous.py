@@ -267,6 +267,8 @@ class RealEnvironment(ContinuousEnvironment):
         """
         Apply a particular action on the real car
         """
+        if action[1]<0:
+            input("I decided to reverse")
         self.car.steering.set_rotation(action[0])
         self.car.throttle.set_throttle(action[1])
 
@@ -275,15 +277,16 @@ class RealEnvironment(ContinuousEnvironment):
         """
         Check for three crashed events
         """
+        return True
         is_crashed = super()._is_crashed(state)
         if is_crashed:
             # Save state and stop car
             throttle = self.car.throttle.get_throttle()
             self.car.throttle.set_throttle(0)
             # Check if the car is crashed
-            option = input("Press enter to continue (or 'c' to crash)")
-            if option.lower().strip()=='c':
-                return True
+            #option = input("Press enter to continue (or 'c' to crash)")
+            #if option.lower().strip()=='c':
+            #    return True
             # Restore state
             self.car.throttle.set_throttle(throttle)
         return False
