@@ -20,7 +20,7 @@ class default:
 	max_episodes = 10000
 
 	# Max episode length
-	max_episode_length = 500
+	max_episode_length = 50
 
 	# Base learning rate for the Actor network
 	actor_learning_rate = 0.0005  # Paper uses 0.0001
@@ -70,7 +70,7 @@ class simulation(default):
 	learning_phase = 1
 
 	# Exploration noise
-	epsilon = 1
+	epsilon = 0.4
 
 	# How often to save the model
 	save_interval = 2

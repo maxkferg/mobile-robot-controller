@@ -119,10 +119,9 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
 
         # Save a camera image
         save_state(car, config.image_path)
-
+ 
         total_reward = 0
         for j in range(config.max_episode_length):
-            loss = 0
             epsilon -= 1.0 / EXPLORE
             a_t = np.zeros([1,action_dim])
             noise_t = np.zeros([1,action_dim])
@@ -158,7 +157,7 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
             total_reward += r_t
             s_t = s_t1
 
-            print("Episode", i, "Step", step, "Action", a_t, "Reward", r_t, "Loss", loss)
+            print("Episode", i, "Step", step, "Action", a_t, "Reward", r_t)
 
             step += 1
             if done:
@@ -169,52 +168,53 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
             print("Total Step: " + str(step))
             print("")
 
-            # Do the batch update
-            # This is outside of the control loop for performance reasons
-            print("Running the batch update algorithm...")
+        # Do the batch update
+        # This is outside of the control loop for performance reasons
+        print("Running the batch update algorithm...")
 
-            batch = buff.getBatch(config.batch_size)
-            states = np.asarray([e[0] for e in batch])
-            actions = np.asarray([e[1] for e in batch])
-            rewards = np.asarray([e[2] for e in batch])
-            new_states = np.asarray([e[3] for e in batch])
-            dones = np.asarray([e[4] for e in batch])
-            y_t = np.asarray([e[1] for e in batch])
+        loss = 0 
+        batch = buff.getBatch(config.batch_size)
+        states = np.asarray([e[0] for e in batch])
+        actions = np.asarray([e[1] for e in batch])
+        rewards = np.asarray([e[2] for e in batch])
+        new_states = np.asarray([e[3] for e in batch])
+        dones = np.asarray([e[4] for e in batch])
+        y_t = np.asarray([e[1] for e in batch])
 
-            target_q_values = critic.target_model.predict([new_states, actor.target_model.predict(new_states)])
+        target_q_values = critic.target_model.predict([new_states, actor.target_model.predict(new_states)])
 
-            for k in range(len(batch)):
-                if dones[k]:
-                    y_t[k] = rewards[k]
-                else:
-                    y_t[k] = rewards[k] + config.gamma*target_q_values[k]
+        for k in range(len(batch)):
+            if dones[k]:
+                y_t[k] = rewards[k]
+            else:
+                y_t[k] = rewards[k] + config.gamma*target_q_values[k]
 
-            if train_indicator:
-                loss += critic.model.train_on_batch([states,actions], y_t)
-                a_for_grad = actor.model.predict(states)
-                grads = critic.gradients(states, a_for_grad)
-                actor.train(states, grads)
-                actor.target_train()
-                critic.target_train()
-            print("Loss: {0:.3f}".format(loss),flush=True)
+        if train_indicator:
+            loss += critic.model.train_on_batch([states,actions], y_t)
+            a_for_grad = actor.model.predict(states)
+            grads = critic.gradients(states, a_for_grad)
+            actor.train(states, grads)
+            actor.target_train()
+            critic.target_train()
+        print("Loss: {0:.3f}".format(loss),flush=True)
 
 
-            if np.mod(i, config.save_interval) == 0:
-                if (train_indicator):
-                    print("Saving the weights...")
-                    actor_weights = os.path.join(config.save_dir, "actormodel.h5")
-                    actor_json = os.path.join(config.save_dir, "actormodel.json")
-                    critic_weights = os.path.join(config.save_dir, "criticmodel.h5")
-                    critic_json = os.path.join(config.save_dir, "criticmodel.json")
+        if np.mod(i, config.save_interval) == 0:
+            if (train_indicator):
+                print("Saving the weights...")
+                actor_weights = os.path.join(config.save_dir, "actormodel.h5")
+                actor_json = os.path.join(config.save_dir, "actormodel.json")
+                critic_weights = os.path.join(config.save_dir, "criticmodel.h5")
+                critic_json = os.path.join(config.save_dir, "criticmodel.json")
 
-                    actor.model.save_weights(actor_weights, overwrite=True)
-                    with open(actor_json, "w") as outfile:
-                        json.dump(actor.model.to_json(), outfile)
+                actor.model.save_weights(actor_weights, overwrite=True)
+                with open(actor_json, "w") as outfile:
+                    json.dump(actor.model.to_json(), outfile)
 
-                    critic.model.save_weights(critic_weights, overwrite=True)
-                    with open(critic_json, "w") as outfile:
-                        json.dump(critic.model.to_json(), outfile)
-                    print("Saved weights to {0}".format(config.save_dir))
+                critic.model.save_weights(critic_weights, overwrite=True)
+                with open(critic_json, "w") as outfile:
+                    json.dump(critic.model.to_json(), outfile)
+                print("Saved weights to {0}".format(config.save_dir))
 
     env.end()  # This is for shutting down TORCS
     print("Finish.")
