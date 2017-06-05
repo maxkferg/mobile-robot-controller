@@ -1,5 +1,6 @@
 import os
 import json
+import time
 import timeit
 import random
 import argparse
@@ -40,7 +41,7 @@ def imitation(actor, state,  previous_action):
     elif command.strip().lower()=="s":
         # Reverse
         action[0,0] = 0
-        action[0,1] = -0.40
+        action[0,1] = -0.45
     elif command.strip().lower()=="d":
         # Right
         action[0,0] = -0.9
@@ -57,7 +58,6 @@ def imitation(actor, state,  previous_action):
         # Stopped
         action[0,0] = 0
         action[0,1] = 0
-    print(action)
     return action, crashed
 
 
