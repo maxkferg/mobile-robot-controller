@@ -141,7 +141,7 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
 
             # Patch the reward ect
             if crashed:
-                r_t = -2
+                r_t = 0
                 done = True
 
             # The camera frame becomes the state

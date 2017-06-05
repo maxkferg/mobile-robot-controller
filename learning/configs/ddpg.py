@@ -23,10 +23,10 @@ class default:
 	max_episode_length = 500
 
 	# Base learning rate for the Actor network
-	actor_learning_rate = 0.0001  # Paper uses 0.0001
+	actor_learning_rate = 0.001  # Paper uses 0.0001
 
 	# Base learning rate for the Critic Network
-	critic_learning_rate = 0.001  # Paper uses 0.001
+	critic_learning_rate = 0.01  # Paper uses 0.001
 
 	# L2 weight decay for Q
 	l2_decay = 0.01  # Paper uses 0.01
@@ -35,7 +35,7 @@ class default:
 	gamma = 0.99  # Paper uses 0.99
 
 	# Soft target update param
-	tau = 0.001  # Paper uses 0.001
+	tau = 0.01  # Paper uses 0.001
 
 	# Size of replay buffer
 	buffer_size = 500

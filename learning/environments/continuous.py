@@ -191,6 +191,7 @@ class ContinuousEnvironment:
         Return a reward based on the average color in the camera
         """
         reward = np.mean(state.frames)/256
+        reward = int(reward>0.5) + reward
         return reward
 
 
