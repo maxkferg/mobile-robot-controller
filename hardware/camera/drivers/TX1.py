@@ -78,7 +78,7 @@ if ret == Gst.StateChangeReturn.FAILURE:
 bus = pipeline.get_bus()
 
 
-def get_frame(debug=True):
+def get_frame(debug=False):
     """
     Return a frame from the camera as a RGB numpy array
     Return None is no frame is available

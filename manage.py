@@ -52,8 +52,11 @@ def demo():
 def sonar():
     """Run the sonar sensors and print their values"""
     while True:
-        car.front_sonar.distance()
-        car.rear_sonar.distance()
+        for i in range(11):
+            car.front_sonar.tick()
+            car.rear_sonar.tick()
+        print("Front:", car.front_sonar.distance())
+        print("Rear:", car.rear_sonar.distance())
 
 
 
