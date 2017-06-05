@@ -70,7 +70,7 @@ class simulation(default):
 	learning_phase = 1
 
 	# Exploration noise
-	epsilon = 0.5
+	epsilon = 1
 
 	# How often to save the model
 	save_interval = 2
