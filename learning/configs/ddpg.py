@@ -41,7 +41,7 @@ class default:
 	buffer_size = 500
 
 	# Training minibatch size
-	batch_size = 64
+	batch_size = 48
 
 	# Exploration parameters
 	ou_mu = 0.0
