@@ -48,7 +48,7 @@ def imitation(actor, state,  previous_action):
     elif command.strip().lower()=="c":
         # Crashed
         action[0,0] = random.uniform(-1, 1)
-        action[0,1] = 0.3 + random.uniform(0, 0.2)
+        action[0,1] = 0.8 + random.uniform(0, 0.2)
         crashed = True  
     elif command.strip().lower()=="f":
         # Let the AI drive
