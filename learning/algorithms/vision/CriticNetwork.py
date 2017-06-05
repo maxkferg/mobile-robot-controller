@@ -10,8 +10,8 @@ from keras.initializers import *
 from keras.optimizers import Adam
 from .VisionNetwork import VisionNetwork
 
-HIDDEN1_UNITS = 100
-HIDDEN2_UNITS = 300
+HIDDEN1_UNITS = 50
+HIDDEN2_UNITS = 100
 
 class CriticNetwork(object):
     def __init__(self, sess, config, state_size, action_size, BATCH_SIZE, TAU, LEARNING_RATE):

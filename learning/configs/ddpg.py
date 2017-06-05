@@ -23,10 +23,10 @@ class default:
 	max_episode_length = 500
 
 	# Base learning rate for the Actor network
-	actor_learning_rate = 0.0001  # Paper uses 0.0001
+	actor_learning_rate = 0.0005  # Paper uses 0.0001
 
 	# Base learning rate for the Critic Network
-	critic_learning_rate = 0.001  # Paper uses 0.001
+	critic_learning_rate = 0.005  # Paper uses 0.001
 
 	# L2 weight decay for Q
 	l2_decay = 0.01  # Paper uses 0.01
@@ -35,13 +35,13 @@ class default:
 	gamma = 0.99  # Paper uses 0.99
 
 	# Soft target update param
-	tau = 0.001  # Paper uses 0.001
+	tau = 0.005  # Paper uses 0.001
 
 	# Size of replay buffer
-	buffer_size = 500
+	buffer_size = 1000
 
 	# Training minibatch size
-	batch_size = 48
+	batch_size = 64
 
 	# Exploration parameters
 	ou_mu = 0.0
@@ -58,19 +58,19 @@ class simulation(default):
 	render = True
 
 	# Where the model is loaded from
-	load_dir = "weights/vision/"
+	load_dir = "weights/colors/"
 
 	# Where the model is saved to
-	save_dir = "weights/vision/"
+	save_dir = "weights/colors/"
 
 	# Where to save the image
-	image_path = "weights/vision/frame.jpg"
+	image_path = "weights/colors/frame.jpg"
 
 	# Use 1 to train the model and 0 to test
 	learning_phase = 1
 
 	# Exploration noise
-	epsilon = 0.2
+	epsilon = 0.5
 
 	# How often to save the model
-	save_interval = 3
+	save_interval = 2

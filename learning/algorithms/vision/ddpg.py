@@ -139,9 +139,14 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
             # Take a new sample from the environment
             car, r_t, done, info = env.step(a_t[0])
 
+            # Wait for the car to drive a little
+            time.sleep(0.1)
+
+            # Stop the car again
+            env.reset()
+
             # Patch the reward ect
             if crashed:
-                r_t = -2
                 done = True
 
             # The camera frame becomes the state
@@ -159,19 +164,15 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
             if done:
                 break
 
-        # Print summary statistics for this batch
-        print("TOTAL REWARD @ " + str(i) +"-th Episode  : Reward " + str(total_reward))
-        print("Total Step: " + str(step))
-        print("")
+            # Print summary statistics for this batch
+            print("TOTAL REWARD @ " + str(i) +"-th Episode  : Reward " + str(total_reward))
+            print("Total Step: " + str(step))
+            print("")
 
-        # Reset the car before we start the training process
-        env.reset()
+            # Do the batch update
+            # This is outside of the control loop for performance reasons
+            print("Running the batch update algorithm...")
 
-        # Do the batch update
-        # This is outside of the control loop for performance reasons
-        print("Running the batch update algorithm...")
-        for j in range(10):
-            loss = 0
             batch = buff.getBatch(config.batch_size)
             states = np.asarray([e[0] for e in batch])
             actions = np.asarray([e[1] for e in batch])
@@ -196,24 +197,24 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
                 actor.target_train()
                 critic.target_train()
             print("Loss: {0:.3f}".format(loss),flush=True)
-        print("\nCompleted the batch update")
 
-        if np.mod(i, config.save_interval) == 0:
-            if (train_indicator):
-                print("Saving the weights...")
-                actor_weights = os.path.join(config.save_dir, "actormodel.h5")
-                actor_json = os.path.join(config.save_dir, "actormodel.json")
-                critic_weights = os.path.join(config.save_dir, "criticmodel.h5")
-                critic_json = os.path.join(config.save_dir, "criticmodel.json")
 
-                actor.model.save_weights(actor_weights, overwrite=True)
-                with open(actor_json, "w") as outfile:
-                    json.dump(actor.model.to_json(), outfile)
+            if np.mod(i, config.save_interval) == 0:
+                if (train_indicator):
+                    print("Saving the weights...")
+                    actor_weights = os.path.join(config.save_dir, "actormodel.h5")
+                    actor_json = os.path.join(config.save_dir, "actormodel.json")
+                    critic_weights = os.path.join(config.save_dir, "criticmodel.h5")
+                    critic_json = os.path.join(config.save_dir, "criticmodel.json")
 
-                critic.model.save_weights(critic_weights, overwrite=True)
-                with open(critic_json, "w") as outfile:
-                    json.dump(critic.model.to_json(), outfile)
-                print("Saved weights to {0}".format(config.save_dir))
+                    actor.model.save_weights(actor_weights, overwrite=True)
+                    with open(actor_json, "w") as outfile:
+                        json.dump(actor.model.to_json(), outfile)
+
+                    critic.model.save_weights(critic_weights, overwrite=True)
+                    with open(critic_json, "w") as outfile:
+                        json.dump(critic.model.to_json(), outfile)
+                    print("Saved weights to {0}".format(config.save_dir))
 
     env.end()  # This is for shutting down TORCS
     print("Finish.")

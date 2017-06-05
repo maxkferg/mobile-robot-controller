@@ -165,25 +165,11 @@ class ContinuousEnvironment:
 
     def _get_reward(self,state,crashed):
         """
-        Return the reward associated with @state
-        @param state: An object describing the car state
+        Return a reward based on the average color in the camera
         """
-        # Extract state parameters
-        rotation = state.steering
-        throttle = state.throttle
-        sonar = [state.front_distance, state.rear_distance]
-        steering_history = self.action_history.to_array()[:,0]
-        # Penalize collisions heavily
-        if crashed:
-            return -1 - 1 * abs(throttle)
-        # Calculate reward
-        reward = 0
-        reward += 0.04 * max(0, throttle)    # Favor driving forward
-        reward -= 0.01 * min(0, throttle)    # Reward reversing
-        reward += 0.001 * np.sum(sonar)      # Favor larger sonar values
-        assert isinstance(reward,float)
+        reward = np.mean(state.frames)/256
+        reward = int(reward>0.46) + reward
         return reward
-
 
 
 

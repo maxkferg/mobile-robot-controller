@@ -11,9 +11,9 @@ from keras.optimizers import Adam
 from hardware.camera.interface import Camera
 
 
-FILTERS1 = 4
-FILTERS2 = 4
-FILTERS3 = 8
+FILTERS1 = 2
+FILTERS2 = 3
+FILTERS3 = 4
 
 class VisionNetwork(object):
     """
@@ -26,15 +26,15 @@ class VisionNetwork(object):
 
         layer0 = Input(shape=Camera.image_shape)
         layer1 = Convolution2D(FILTERS1, (8,8), strides=4, padding='same', activation='relu')(layer0)
-        layer2 = MaxPooling2D(pool_size=(4, 4))(layer1)
+        layer2 = MaxPooling2D(pool_size=(4,4))(layer1)
         layer3 = Dropout(0.2)(layer2)
 
-        layer4 = Convolution2D(FILTERS2, (5,5), strides=2, padding='same', activation='relu')(layer3)
-        layer5 = MaxPooling2D(pool_size=(3, 3))(layer4)
+        layer4 = Convolution2D(FILTERS2, (4,4), strides=2, padding='same', activation='relu')(layer3)
+        layer5 = MaxPooling2D(pool_size=(2,2))(layer4)
         layer6 = Dropout(0.2)(layer5)
 
-        layer7 = Convolution2D(FILTERS3, (5,5), padding='same', activation='relu')(layer6)
-        layer8 = MaxPooling2D(pool_size=(3, 3))(layer7)
+        layer7 = Convolution2D(FILTERS3, (3,3), padding='same', activation='relu')(layer6)
+        layer8 = MaxPooling2D(pool_size=(2,2))(layer7)
         layer9 = Dropout(0.2)(layer8)
 
         self.output = Flatten()(layer9)
