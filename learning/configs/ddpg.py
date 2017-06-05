@@ -58,19 +58,19 @@ class simulation(default):
 	render = True
 
 	# Where the model is loaded from
-	load_dir = "weights/vision/"
+	load_dir = "weights/colors/"
 
 	# Where the model is saved to
-	save_dir = "weights/vision/"
+	save_dir = "weights/colors/"
 
 	# Where to save the image
-	image_path = "weights/vision/frame.jpg"
+	image_path = "weights/colors/frame.jpg"
 
 	# Use 1 to train the model and 0 to test
 	learning_phase = 1
 
 	# Exploration noise
-	epsilon = 0.2
+	epsilon = 0.5
 
 	# How often to save the model
-	save_interval = 3
+	save_interval = 2

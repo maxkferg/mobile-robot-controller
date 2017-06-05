@@ -169,6 +169,7 @@ class ContinuousEnvironment:
         @param state: An object describing the car state
         """
         # Extract state parameters
+        return self._get_color_reward(state,crashed)
         rotation = state.steering
         throttle = state.throttle
         sonar = [state.front_distance, state.rear_distance]
@@ -184,6 +185,13 @@ class ContinuousEnvironment:
         assert isinstance(reward,float)
         return reward
 
+
+    def _get_color_reward(self,state,crashed):
+        """
+        Return a reward based on the average color in the camera
+        """
+        reward = np.mean(state.frames)/256
+        return reward
 
 
 
