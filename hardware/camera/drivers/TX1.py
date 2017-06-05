@@ -53,7 +53,7 @@ def new_buffer(sink, data):
 
 
 
-pipeline = Gst.parse_launch("nvcamerasrc ! video/x-raw(memory:NVMM), width=(int)640, height=(int)360,format=(string)I420, framerate=(fraction)120/1 ! nvvidconv flip-method=2 ! video/x-raw, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink name=sink")
+pipeline = Gst.parse_launch("nvcamerasrc ! video/x-raw(memory:NVMM), width=(int)320, height=(int)180,format=(string)I420, framerate=(fraction)120/1 ! nvvidconv flip-method=2 ! video/x-raw, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink name=sink")
 logger.info("Camera Pipeline open")
 sink = pipeline.get_by_name("sink")
 logger.debug("Camera sink created")

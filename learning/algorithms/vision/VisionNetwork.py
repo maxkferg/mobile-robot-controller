@@ -25,7 +25,7 @@ class VisionNetwork(object):
         K.set_learning_phase(config.learning_phase) # for dropout
 
         layer0 = Input(shape=Camera.image_shape)
-        layer1 = Convolution2D(FILTERS1, (8,8), strides=4, padding='same', activation='relu')(layer0)
+        layer1 = Convolution2D(FILTERS1, (8,8), strides=2, padding='same', activation='relu')(layer0)
         layer2 = MaxPooling2D(pool_size=(4,4))(layer1)
         layer3 = Dropout(0.2)(layer2)
 

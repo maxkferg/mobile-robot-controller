@@ -19,7 +19,7 @@ class Camera:
     An interface to the NVIDIA camera
     Return camera frames as numpy arrays
     """
-    image_shape  = (360, 640, 3)
+    image_shape  = (320, 180, 3)
 
     def __del__(self):
         """

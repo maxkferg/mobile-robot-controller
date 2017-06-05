@@ -9,8 +9,8 @@ from keras.initializers import *
 from keras.optimizers import Adam
 from .VisionNetwork import VisionNetwork
 
-HIDDEN1_UNITS = 50
-HIDDEN2_UNITS = 100
+HIDDEN1_UNITS = 10
+HIDDEN2_UNITS = 20
 
 class ActorNetwork(object):
     def __init__(self, sess, config, state_size, action_size, BATCH_SIZE, TAU, LEARNING_RATE):

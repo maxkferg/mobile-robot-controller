@@ -53,7 +53,7 @@ class ObservationSpace:
     """
     Represents the observations which can be made
     """
-    shape = (360, 640, 3)
+    shape = (320, 180, 3)
 
 
 class ContinuousEnvironment:
