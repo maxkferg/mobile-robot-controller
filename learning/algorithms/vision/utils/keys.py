@@ -12,8 +12,10 @@ def wait():
 
     character = None
     try:
-        while not character:
+        i = 0
+        while not character and i<100:
             try:
+                i += 1
                 character = sys.stdin.read(1)
             except IOError as e: 
                 pass
