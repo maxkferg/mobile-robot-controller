@@ -20,7 +20,7 @@ class default:
 	max_episodes = 10000
 
 	# Max episode length
-	max_episode_length = 2000
+	max_episode_length = 500
 
 	# Base learning rate for the Actor network
 	actor_learning_rate = 0.0001  # Paper uses 0.0001
@@ -41,7 +41,7 @@ class default:
 	buffer_size = 500
 
 	# Training minibatch size
-	batch_size = 32
+	batch_size = 64
 
 	# Exploration parameters
 	ou_mu = 0.0

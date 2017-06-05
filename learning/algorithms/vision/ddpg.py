@@ -77,14 +77,10 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
     state_dim = 4  # Number of sensors input
 
     np.random.seed(1337)
-
     EXPLORE = 100000.
-    episode_count = 2000
-    max_steps = 100000
     reward = 0
     done = False
     step = 0
-    indicator = 0
     epsilon = config.epsilon
 
     # Tensorflow GPU optimization
@@ -111,7 +107,7 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
         print("Cannot load weight files: ",e)
 
     print("Training...")
-    for i in range(episode_count):
+    for i in range(config.max_episodes):
 
         print("Episode: {0}, Replay Buffer: {1}, Epsilon: {2}".format(i, buff.count(), epsilon))
         input("Press <enter> to start this episode")
@@ -125,7 +121,7 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
         save_state(car, config.image_path)
 
         total_reward = 0
-        for j in range(max_steps):
+        for j in range(config.max_episode_length):
             loss = 0
             epsilon -= 1.0 / EXPLORE
             a_t = np.zeros([1,action_dim])
