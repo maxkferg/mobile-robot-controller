@@ -38,10 +38,10 @@ class default:
 	tau = 0.005  # Paper uses 0.001
 
 	# Size of replay buffer
-	buffer_size = 500
+	buffer_size = 1000
 
 	# Training minibatch size
-	batch_size = 32
+	batch_size = 64
 
 	# Exploration parameters
 	ou_mu = 0.0
