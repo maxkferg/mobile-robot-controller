@@ -172,31 +172,31 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
         # This is outside of the control loop for performance reasons
         print("Running the batch update algorithm...")
         for i in range(20):
-        loss = 0 
-        batch = buff.getBatch(config.batch_size)
-        states = np.asarray([e[0] for e in batch])
-        actions = np.asarray([e[1] for e in batch])
-        rewards = np.asarray([e[2] for e in batch])
-        new_states = np.asarray([e[3] for e in batch])
-        dones = np.asarray([e[4] for e in batch])
-        y_t = np.asarray([e[1] for e in batch])
+            loss = 0 
+            batch = buff.getBatch(config.batch_size)
+            states = np.asarray([e[0] for e in batch])
+            actions = np.asarray([e[1] for e in batch])
+            rewards = np.asarray([e[2] for e in batch])
+            new_states = np.asarray([e[3] for e in batch])
+            dones = np.asarray([e[4] for e in batch])
+            y_t = np.asarray([e[1] for e in batch])
 
-        target_q_values = critic.target_model.predict([new_states, actor.target_model.predict(new_states)])
+            target_q_values = critic.target_model.predict([new_states, actor.target_model.predict(new_states)])
 
-        for k in range(len(batch)):
-            if dones[k]:
-                y_t[k] = rewards[k]
-            else:
-                y_t[k] = rewards[k] + config.gamma*target_q_values[k]
+            for k in range(len(batch)):
+                if dones[k]:
+                    y_t[k] = rewards[k]
+                else:
+                    y_t[k] = rewards[k] + config.gamma*target_q_values[k]
 
-        if train_indicator:
-            loss += critic.model.train_on_batch([states,actions], y_t)
-            a_for_grad = actor.model.predict(states)
-            grads = critic.gradients(states, a_for_grad)
-            actor.train(states, grads)
-            actor.target_train()
-            critic.target_train()
-        print("Loss: {0:.3f}".format(loss),flush=True)
+            if train_indicator:
+                loss += critic.model.train_on_batch([states,actions], y_t)
+                a_for_grad = actor.model.predict(states)
+                grads = critic.gradients(states, a_for_grad)
+                actor.train(states, grads)
+                actor.target_train()
+                critic.target_train()
+            print("Loss: {0:.3f}".format(loss),flush=True)
 
 
         if np.mod(i, config.save_interval) == 0:
