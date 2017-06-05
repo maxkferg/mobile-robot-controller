@@ -171,7 +171,7 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
         # Do the batch update
         # This is outside of the control loop for performance reasons
         print("Running the batch update algorithm...")
-
+        for i in range(20):
         loss = 0 
         batch = buff.getBatch(config.batch_size)
         states = np.asarray([e[0] for e in batch])
