@@ -40,15 +40,15 @@ def imitation(actor, state,  previous_action):
     elif command.strip().lower()=="s":
         # Reverse
         action[0,0] = 0
-        action[0,1] = -0.45
+        action[0,1] = -0.40
     elif command.strip().lower()=="d":
         # Right
         action[0,0] = -0.9
         action[0,1] = 0.49
     elif command.strip().lower()=="c":
         # Crashed
-        action[0,0] = 0
-        action[0,1] = 0
+        action[0,0] = random.uniform(-1, 1)
+        action[0,1] = 0.3 + random.uniform(0, 0.2)
         crashed = True  
     elif command.strip().lower()=="f":
         # Let the AI drive
@@ -163,6 +163,9 @@ def vision_train(env, config, train_indicator=0):    #1 means Train, 0 means sim
         print("TOTAL REWARD @ " + str(i) +"-th Episode  : Reward " + str(total_reward))
         print("Total Step: " + str(step))
         print("")
+
+        # Reset the car before we start the training process
+        env.reset()
 
         # Do the batch update
         # This is outside of the control loop for performance reasons
