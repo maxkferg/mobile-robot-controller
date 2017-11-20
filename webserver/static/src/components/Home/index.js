@@ -50,7 +50,7 @@ export class Dashboard extends Component {
   accelerate = () => {
     this.props.mutate({
       update: this.update,
-      variables: { throttle: 
+      variables: { throttle:
         this.props.data.car.throttle + 0.1
       }
     });
@@ -59,7 +59,7 @@ export class Dashboard extends Component {
   decelerate = () => {
     this.props.mutate({
       update: this.update,
-      variables: { throttle: 
+      variables: { throttle:
         this.props.data.car.throttle - 0.1
       }
     });
@@ -68,14 +68,18 @@ export class Dashboard extends Component {
   turnLeft = () => {
     this.props.mutate({
       update: this.update,
-      variables: {left: 0.1}
+      variables: {right:
+        this.props.data.car.rotation - 0.1
+      }
     });
   }
 
   turnRight = () => {
     this.props.mutate({
       update: this.update,
-      variables: {right: 0.1}
+      variables: {right:
+        this.props.data.car.rotation + 0.1
+      }
     });
   }
 

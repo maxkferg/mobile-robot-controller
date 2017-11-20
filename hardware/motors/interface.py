@@ -200,7 +200,7 @@ class Throttle(PWM):
         """
         Put the car into reverse mode
         """
-        for i in np.linspace(0, -0.6, 20): 
+        for i in np.linspace(0, -0.6, 20):
             self._set_throttle(i)
             time.sleep(0.01)
         for i in np.linspace(-0.6, 0, 20):
@@ -216,8 +216,8 @@ class Throttle(PWM):
         Return the new (limited) speed
         """
 
-        forward_max = 0.56
-        backward_max = -0.45
+        forward_max = 0.7
+        backward_max = -0.7
 
         if speed < backward_max:
             return backward_max
@@ -232,7 +232,7 @@ class Throttle(PWM):
         Certain PWM frequencies will cause damage, so we block them
         """
         pwm_stall_min = 1.40 # ms
-        pwm_stall_max = 1.64 # ms
+        pwm_stall_max = 1.60 # ms
         pwm_stopped = 1.55 # ms
         if pwm_stall_min < pulse and pulse < pwm_stall_max:
             pulse = pwm_stopped
