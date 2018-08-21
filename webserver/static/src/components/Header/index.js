@@ -1,108 +1,50 @@
+import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { browserHistory } from 'react-router';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import AppBar from 'material-ui/AppBar';
-import LeftNav from 'material-ui/Drawer';
-import MenuItem from 'material-ui/MenuItem';
-import FlatButton from 'material-ui/FlatButton';
-import Divider from 'material-ui/Divider';
+import { withStyles } from '@material-ui/core/styles';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
+import Button from '@material-ui/core/Button';
+import IconButton from '@material-ui/core/IconButton';
+import MenuIcon from '@material-ui/icons/Menu';
 
-import * as actionCreators from '../../actions/auth';
-
-function mapStateToProps(state) {
-    return {
-        token: state.auth.token,
-        userName: state.auth.userName,
-        isAuthenticated: state.auth.isAuthenticated,
-    };
-}
-
-function mapDispatchToProps(dispatch) {
-    return bindActionCreators(actionCreators, dispatch);
-}
-
-@connect(mapStateToProps, mapDispatchToProps)
-export class Header extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            open: false,
-        };
-
-    }
-
-    dispatchNewRoute(route) {
-        browserHistory.push(route);
-        this.setState({
-            open: false,
-        });
-
-    }
-
-
-    handleClickOutside() {
-        this.setState({
-            open: false,
-        });
-    }
-
-
-    logout(e) {
-        e.preventDefault();
-        this.props.logoutAndRedirect();
-        this.setState({
-            open: false,
-        });
-    }
-
-    openNav() {
-        this.setState({
-            open: true,
-        });
-    }
-
-    render() {
-        return (
-            <header>
-                <LeftNav open={this.state.open}>
-                    {
-                        !this.props.isAuthenticated ?
-                            <div>
-                                <MenuItem onClick={() => this.dispatchNewRoute('/login')}>
-                                    Login
-                                </MenuItem>
-                                <MenuItem onClick={() => this.dispatchNewRoute('/register')}>
-                                    Register
-                                </MenuItem>
-                            </div>
-                            :
-                            <div>
-                                <MenuItem onClick={() => this.dispatchNewRoute('/analytics')}>
-                                    Analytics
-                                </MenuItem>
-                                <Divider />
-
-                                <MenuItem onClick={(e) => this.logout(e)}>
-                                    Logout
-                                </MenuItem>
-                            </div>
-                    }
-                </LeftNav>
-                <AppBar
-                  title="Stanford Autonomous Toy Car"
-                  onLeftIconButtonTouchTap={() => this.openNav()}
-                  iconElementRight={
-                      <FlatButton label="Home" onClick={() => this.dispatchNewRoute('/')} />
-                    }
-                />
-            </header>
-
-        );
-    }
-}
-
-Header.propTypes = {
-    logoutAndRedirect: React.PropTypes.func,
-    isAuthenticated: React.PropTypes.bool,
+const styles = {
+  root: {
+    flexGrow: 1,
+  },
+  flex: {
+    flexGrow: 1,
+  },
+  menuButton: {
+    marginLeft: -12,
+    marginRight: 20,
+  },
 };
+
+function ButtonAppBar(props) {
+  const { classes } = props;
+  return (
+    <div className={classes.root}>
+      <AppBar position="static">
+        <Toolbar>
+          <IconButton className={classes.menuButton} color="inherit" aria-label="Menu">
+            <MenuIcon />
+          </IconButton>
+          <Typography variant="title" color="inherit" className={classes.flex}>
+            Stanford Car Controller
+          </Typography>
+          <Button color="inherit">Login</Button>
+        </Toolbar>
+      </AppBar>
+    </div>
+  );
+}
+
+ButtonAppBar.propTypes = {
+  classes: PropTypes.object.isRequired,
+};
+
+export default withStyles(styles)(ButtonAppBar);

@@ -1,10 +1,10 @@
 const webpack = require('webpack');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const HashedModuleIdsPlugin = require('webpack/lib/HashedModuleIdsPlugin');
 
 module.exports = {
     devtool: 'cheap-module-eval-source-map',
     entry: [
-        'bootstrap-loader',
         'webpack-hot-middleware/client',
         './src/index',
     ],
@@ -12,11 +12,33 @@ module.exports = {
         publicPath: '/dist/',
     },
 
+    devServer: {
+        inline: false,
+        contentBase: "./dist",
+    },
+
     module: {
-        loaders: [{
+        rules: [{
+            test: /\.css$/,
+            exclude: [/node_modules/],
+            use: [{
+                loader: "style-loader" // creates style nodes from JS strings
+            },{
+                loader: "css-loader" // translates CSS into CommonJS
+            },{
+                loader: "sass-loader" // compiles Sass to CSS
+            }]
+        },{
             test: /\.scss$/,
-            loader: 'style!css?localIdentName=[path][name]--[local]!postcss-loader!sass',
-        }],
+            exclude: [/node_modules/],
+            use: [{
+                loader: "style-loader" // creates style nodes from JS strings
+            },{
+                loader: "css-loader" // translates CSS into CommonJS
+            },{
+                loader: "sass-loader" // compiles Sass to CSS
+            }]
+        }]
     },
 
     plugins: [
@@ -26,10 +48,9 @@ module.exports = {
             },
             __DEVELOPMENT__: true,
         }),
-        new ExtractTextPlugin('bundle.css'),
-        new webpack.optimize.OccurenceOrderPlugin(),
+        new webpack.optimize.OccurrenceOrderPlugin(),
         new webpack.HotModuleReplacementPlugin(),
-        new webpack.NoErrorsPlugin(),
+        new webpack.NoEmitOnErrorsPlugin(),
         new webpack.ProvidePlugin({
             jQuery: 'jquery',
         }),

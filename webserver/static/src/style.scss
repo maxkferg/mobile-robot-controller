@@ -1,5 +1,13 @@
-:global(body) {
-  position: relative;
+body {
+  margin: 0;
+  padding: 0;
+}
 
-
+main {
+	flex: 1 1 100%;
+    margin: 0 auto;
+    max-width: 100%;
+    padding-top: 40px;
+    padding-left: 64px;
+    padding-right: 64px;
 }

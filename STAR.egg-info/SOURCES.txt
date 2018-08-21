@@ -1,0 +1,15 @@
+README.md
+setup.py
+STAR.egg-info/PKG-INFO
+STAR.egg-info/SOURCES.txt
+STAR.egg-info/dependency_links.txt
+STAR.egg-info/top_level.txt
+webserver/__init__.py
+webserver/basedir.py
+webserver/config.py
+webserver/index.py
+webserver/application/__init__.py
+webserver/application/app.py
+webserver/application/schema.py
+webserver/application/utils/__init__.py
+webserver/application/utils/auth.py

@@ -1,15 +1,8 @@
 import logging
-from hardware.car import car
 from flask_script import Manager
-from flask_migrate import Migrate, MigrateCommand
-from webserver.application.app import app, db
-from learning.train import train_car_ddpg, train_simulation_ddpg
+from webserver.application.app import app
 
-migrate = Migrate(app, db)
 manager = Manager(app)
-
-# migrations
-manager.add_command('db', MigrateCommand)
 
 
 def setup_logger(name,level):
@@ -19,33 +12,6 @@ def setup_logger(name,level):
     ch.setLevel(level)
     formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(name)s: %(message)s')
     ch.setFormatter(formatter)
-    #logger.addHandler(ch)
-
-
-@manager.command
-def create_db():
-    """Creates the db tables."""
-    db.create_all()
-
-
-@manager.command
-def simulate():
-    """Train the car using the simulation"""
-    train_simulation_ddpg()
-
-
-@manager.command
-def train():
-    """Train the car using the physical hardware"""
-    train_car_ddpg()
-
-
-@manager.command
-def demo():
-    """Run the DDPG pendulum demo"""
-    from learning.algorithms.ddpg.demo import demo
-    from learning.configs.ddpg import demo as config
-    demo(config)
 
 
 @manager.command
@@ -58,10 +24,19 @@ def sonar():
         print("Front:", car.front_sonar.distance())
         print("Rear:", car.rear_sonar.distance())
 
+@manager.command
+def encoders():
+    """Print the encoder values for debugging"""
+    while True:
+        for i in range(11):
+            car.front_sonar.tick()
+            car.rear_sonar.tick()
+        print("Front:", car.front_sonar.distance())
+        print("Rear:", car.rear_sonar.distance())
+
+
 
 
 if __name__ == '__main__':
-    setup_logger('hardware',logging.INFO)
-    setup_logger('learning',logging.INFO)
     setup_logger('webserver',logging.INFO)
     manager.run()

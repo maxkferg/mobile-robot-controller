@@ -2,15 +2,7 @@ import { createStore, applyMiddleware } from 'redux';
 import thunkMiddleware from 'redux-thunk';
 import rootReducer from '../reducers';
 
-const debugware = [];
-if (process.env.NODE_ENV !== 'production') {
-    const createLogger = require('redux-logger');
-
-    debugware.push(createLogger({
-        collapsed: true,
-    }));
-}
-
+let debugware = [];
 export default function configureStore(initialState) {
     const store = createStore(
         rootReducer,

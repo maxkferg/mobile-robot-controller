@@ -1,11 +1,12 @@
 /* eslint camelcase: 0, no-underscore-dangle: 0 */
 
 import React from 'react';
+import PropTypes from 'prop-types';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import TextField from 'material-ui/TextField';
-import RaisedButton from 'material-ui/RaisedButton';
-import Paper from 'material-ui/Paper';
+import TextField from '@material-ui/core/TextField';
+import RaisedButton from '@material-ui/core/Button';
+import Paper from '@material-ui/core/Paper';
 
 import * as actionCreators from '../actions/auth';
 
@@ -145,7 +146,7 @@ export default class RegisterView extends React.Component {
                             />
                         </div>
 
-                        <RaisedButton
+                        <Button
                           disabled={this.state.disabled}
                           style={{ marginTop: 50 }}
                           label="Submit"
@@ -162,6 +163,6 @@ export default class RegisterView extends React.Component {
 }
 
 RegisterView.propTypes = {
-    registerUser: React.PropTypes.func,
-    registerStatusText: React.PropTypes.string,
+    registerUser: PropTypes.func,
+    registerStatusText: PropTypes.string,
 };

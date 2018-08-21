@@ -30,6 +30,10 @@ app.all(/^\/api\/(.*)/, (req, res) => {
     proxy.web(req, res, { target: 'http://localhost:5000' });
 });
 
+app.all(/^\/graphql/, (req, res) => {
+    proxy.web(req, res, { target: 'http://localhost:5000' });
+});
+
 app.get(/.*/, (req, res) => {
     res.sendFile(path.join(__dirname, '/index.html'));
 });

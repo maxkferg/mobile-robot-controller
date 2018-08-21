@@ -6,7 +6,8 @@ import { ApolloProvider } from 'react-apollo';
 import { withStyles } from '@material-ui/core/styles';
 import ApolloClient from "apollo-boost";
 import Typography from '@material-ui/core/Typography';
-import Wheels from './wheels.js';
+import Wheels from '../Home/wheels';
+import Accelerometer from './accelerometer.js';
 
 
 const styles = theme => ({
@@ -28,6 +29,11 @@ const styles = theme => ({
 class Home extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+      leftWheel:  null,
+      rightWheel: null
+    };
+    this.onMove = this.onMove.bind(this);
   }
 
   createClient() {
@@ -40,14 +46,30 @@ class Home extends Component {
     });
   }
 
+  onMove(event){
+    const MAX = 30;
+    const MIN = -30;
+    const SCALE = 50/MAX;
+    let forward = event.beta; //[-180, 180]
+    let turn = event.gamma;
+    turn = SCALE * Math.max(Math.min(MAX, turn), MIN);
+    forward = SCALE * Math.max(Math.min(MAX, forward), MIN);
+    let leftWheel = forward + turn;
+    let rightWheel = forward - turn;
+    this.setState({leftWheel: leftWheel, rightWheel: rightWheel});
+  }
+
   render() {
     const { classes } = this.props;
     return (
       // Feed the client instance into your React component tree
       <ApolloProvider client={this.createClient()}>
         <section className={classes.section}>
-            <Typography variant="display1" align="center">Wheels</Typography>
-            <Wheels />
+            <Typography variant="display1" align="center">Accelerometer</Typography>
+            <Wheels leftWheel={this.state.leftWheel} rightWheel={this.state.rightWheel} disabled />
+        </section>
+        <section className={classes.section}>
+            <Accelerometer onMove={this.onMove}/>
         </section>
       </ApolloProvider>
     );

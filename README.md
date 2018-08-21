@@ -3,34 +3,20 @@
 
 Setup
 
-```
+```sh
 sudo pip install -r requirements.txt
 python setup.py install
-source setup.sh
 ```
 
-## Server
-
+## Building the dashboard
+The dashbaord is a static html site which communicates with the robot using GraphQL. To build the webpage:
 ```sh
-sudo python3 manage.py runserver --host=0.0.0.0 # Production
-export DEV=1 && python3 manage.py runserver --host=0.0.0.0 # Dev
+cd webserver/static
+npm i
+np run build
 ```
 
-## Simulations
-
-```sh
-sudo python3 manage.py simulate # Production
-export DEV=1 && python3 manage.py simulate # Dev
-```
-
-## Learning Algorithm
-
-```sh
-sudo python3 manage.py train # Production
-export DEV=1 && python3 manage.py train  # Dev
-```
-
-## Dashboard
+To run the development environment
 ```sh
 cd /webserver/static
 npm install
@@ -38,3 +24,11 @@ npm start
 ```
 
 
+## Runing the server on the robot
+```sh
+export PROD=1 && python3 manage.py runserver --host=0.0.0.0 # Production
+export python3 manage.py runserver # Development
+```
+
+## License
+MIT

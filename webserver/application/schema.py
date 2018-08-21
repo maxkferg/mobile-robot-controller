@@ -1,50 +1,44 @@
+import os
 import graphene
-from hardware.car import car as hw
-from learning.train import train_car_ddpg
+from .hardware import MotorController, clip_verbose
+
+isProd = os.environ.get('PROD')
+motor = MotorController(isProd)
 
 
 class CarState(graphene.ObjectType):
     """Mutation return value"""
-    rotation = graphene.Float()
-    throttle = graphene.Float()
+    leftWheel = graphene.Float()
+    rightWheel = graphene.Float()
 
-    def __init__(self, *args, **kwargs):
-        super(CarState, self).__init__(*args,**kwargs)
-        self.rotation = hw.steering.get_rotation()
-        self.throttle = hw.throttle.get_throttle()
+    def set_state(self, left_wheel, right_wheel):
+        """Set the state on true hardware"""
+        self.leftWheel = clip_verbose(left_wheel, -100, 100)
+        self.rightWheel = clip_verbose(right_wheel, -100, 100)
+        motor.drive(1, self.leftWheel)
+        motor.drive(2, self.rightWheel)
+
+    def __del__(self):
+        motor.stop()
+
+
+car = CarState(leftWheel=0, rightWheel=0)
 
 
 class CarMutation(graphene.Mutation):
     """Adjust the car steering and throttle"""
 
-    class Input():
-        left = graphene.Float()
-        right = graphene.Float()
-        throttle = graphene.Float()
-        reset = graphene.Boolean()
-        train = graphene.Boolean()
+    class Arguments:
+        leftWheel = graphene.Float()
+        rightWheel = graphene.Float()
 
     car = graphene.Field(lambda: CarState)
 
-    @staticmethod
-    def mutate(root, args, context, info):
-        left = args.get('left')
-        right = args.get('right')
-        throttle = args.get('throttle')
-        reset = args.get('reset')
-        train = args.get('train')
-
-        if train:
-            train_car()
-        if reset:
-            hw.reset()
-        if left:
-            hw.steering.turn_left(left)
-        if right:
-            hw.steering.turn_right(right)
-        if throttle:
-            hw.throttle.set_throttle(throttle)
-        return CarMutation(car=CarState())
+    def mutate(self, info, leftWheel, rightWheel):
+        print("leftWheelWheel:",leftWheel)
+        print("rightWheelWheel:",rightWheel)
+        car.set_state(leftWheel, rightWheel)
+        return CarMutation(car=car)
 
 
 
@@ -56,20 +50,23 @@ class Mutations(graphene.ObjectType):
 class Query(graphene.ObjectType):
     car = graphene.Field(lambda: CarState)
     hello = graphene.String(description='A typical hello world')
-    steering = graphene.Float(description='The steering angle of the car')
-    throttle = graphene.Float(description='The throttle of the car')
+    leftWheel = graphene.Float(description='Velocity of the leftWheel wheel')
+    rightWheel = graphene.Float(description='Velocity of the rightWheel wheel')
 
-    def resolve_hello(self, args, context, info):
+    def resolve_hello(self, info, **kwargs):
         return 'World'
 
-    def resolve_thottle(self, args, context, info):
-        return hw.throttle.get_throttle()
+    def resolve_leftWheel(self, info, **kwargs):
+        print('-->6',info)
+        return 6
 
-    def resolve_steering(self, args, context, info):
-        return hw.steering.get_rotation()
+    def resolve_rightWheel(self, info, **kwargs):
+        print('-->8',info)
+        return 8
 
-    def resolve_car(self, args, context, info):
-        return CarState()
+    def resolve_car(self, info, **kwargs):
+        print('-->',info)
+        return car
 
 
 

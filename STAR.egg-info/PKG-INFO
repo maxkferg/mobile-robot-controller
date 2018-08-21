@@ -1,0 +1,15 @@
+Metadata-Version: 1.1
+Name: STAR
+Version: 1.0.1
+Summary: Remote control for autonomous car
+Home-page: https://github.com/maxkferg/mobile-robot-controller
+Author: Max Ferguson
+Author-email: maxferg@stanford.edu
+License: MIT
+Description: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: Alpha
+Classifier: Operating System :: POSIX :: Linux
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Topic :: System :: Hardware

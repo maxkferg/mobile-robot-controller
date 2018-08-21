@@ -1,27 +1,36 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-import { Router, Redirect, browserHistory } from 'react-router';
-import injectTapEventPlugin from 'react-tap-event-plugin';
+import { BrowserRouter } from 'react-router-dom';
 import { syncHistoryWithStore } from 'react-router-redux';
-
+import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import configureStore from './store/configureStore';
-import routes from './routes';
+import blue from '@material-ui/core/colors/blue';
+import App from './app';
 import './style.scss';
 
-require('expose?$!expose?jQuery!jquery');
-require('bootstrap-webpack');
+console.log("App:",App);
 
-injectTapEventPlugin();
+//require('expose?$!expose?jQuery!jquery');
+//require('bootstrap-webpack');
+
+//injectTapEventPlugin();
 const store = configureStore();
-const history = syncHistoryWithStore(browserHistory, store);
+//const history = syncHistoryWithStore(browserHistory, store);
 
-ReactDOM.render(
-    <Provider store={store}>
-        <Router history={history}>
-            <Redirect from="/" to="main" />
-            {routes}
-        </Router>
-    </Provider>,
+const theme = createMuiTheme({
+  palette: {
+    primary: blue,
+  },
+});
+
+ReactDOM.render((
+	<MuiThemeProvider theme={theme}>
+    	<BrowserRouter>
+        	<Provider store={store}>
+	    		<App/>
+	    	</Provider>
+    	</BrowserRouter>
+   	</MuiThemeProvider>),
     document.getElementById('root')
 );
