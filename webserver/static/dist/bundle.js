@@ -44229,13 +44229,17 @@ var Accelerometer = function (_Component) {
       isRunning: false,
       isEnabled: false
     };
-    _this.count = 0;
+    _this.lastSample = Date.now();
     _this.handleClick = _this.handleClick.bind(_this);
     _this.handleOrientation = _this.handleOrientation.bind(_this);
 
     if (window.DeviceOrientationEvent) {
       window.addEventListener('deviceorientation', _this.handleOrientation, false);
       _this.state.isEnabled = true;
+    }
+
+    if (window.screen.lockOrientation) {
+      window.screen.lockOrientation("portrait-primary");
     }
 
     // Test
@@ -44257,10 +44261,12 @@ var Accelerometer = function (_Component) {
     key: 'handleOrientation',
     value: function handleOrientation(event) {
       if (!this.state.isRunning) return;
-      this.count += 1;
-      if (this.count % 100 > 0) return;
-      this.props.onMove(event);
-      console.log(event);
+      var duration = Date.now() - this.lastSample;
+      if (duration > 150) {
+        this.props.onMove(event);
+        this.lastSample = Date.now();
+        console.log(event);
+      }
     }
   }, {
     key: 'handleClick',
@@ -45289,10 +45295,9 @@ var Wheels = (_dec = (0, _reactApollo.graphql)(CarQuery), _dec2 = (0, _reactApol
         _react2.default.createElement(
           _Grid2.default,
           { container: true, spacing: 24, alignItems: "center" },
-          _react2.default.createElement(_Grid2.default, { item: true, xs: 3, className: classes.root }),
           _react2.default.createElement(
             _Grid2.default,
-            { item: true, xs: 3, className: classes.root },
+            { item: true, xs: 6, className: classes.root },
             _react2.default.createElement(_Slider2.default, { value: leftSlider, className: classes.slider, disabled: disabled, reversed: true, onChange: this.handleLeftChange, vertical: true }),
             _react2.default.createElement(
               _Typography2.default,
@@ -45302,15 +45307,14 @@ var Wheels = (_dec = (0, _reactApollo.graphql)(CarQuery), _dec2 = (0, _reactApol
           ),
           _react2.default.createElement(
             _Grid2.default,
-            { item: true, xs: 3, className: classes.root },
+            { item: true, xs: 6, className: classes.root },
             _react2.default.createElement(_Slider2.default, { value: rightSlider, className: classes.slider, disabled: disabled, reversed: true, onChange: this.handleRightChange, vertical: true }),
             _react2.default.createElement(
               _Typography2.default,
               { align: "center" },
               rightWheel.toFixed(1)
             )
-          ),
-          _react2.default.createElement(_Grid2.default, { item: true, xs: 3, className: classes.root })
+          )
         )
       );
     }
@@ -45321,6 +45325,7 @@ var Wheels = (_dec = (0, _reactApollo.graphql)(CarQuery), _dec2 = (0, _reactApol
   var _this2 = this;
 
   this.updateCar = function (leftWheel, rightWheel) {
+    if (leftWheel === undefined || rightWheel === undefined) return;
     _this2.props.mutate({
       update: _this2.update,
       variables: {
@@ -45334,8 +45339,6 @@ var Wheels = (_dec = (0, _reactApollo.graphql)(CarQuery), _dec2 = (0, _reactApol
     var data = store.readQuery({ query: CarQuery });
     data.car = mutation.data.controlCar.car;
     store.writeQuery({ query: CarQuery, data: data });
-    _this2.setState({ leftWheel: data.car.leftWheel });
-    _this2.setState({ rightWheel: data.car.rightWheel });
   };
 
   this.handleLeftChange = function (event, leftSlider) {
@@ -45353,6 +45356,9 @@ var Wheels = (_dec = (0, _reactApollo.graphql)(CarQuery), _dec2 = (0, _reactApol
   this.componentWillReceiveProps = function (props) {
     // External props have changed (And have priority over graphql props)
     if (props.leftWheel !== undefined && props.rightWheel !== undefined) {
+      if (props.leftWheel === _this2.state.leftWheel && props.rightWheel === _this2.state.rightWheel) {
+        return; // Optimization
+      }
       _this2.setState({
         leftWheel: props.leftWheel,
         rightWheel: props.rightWheel

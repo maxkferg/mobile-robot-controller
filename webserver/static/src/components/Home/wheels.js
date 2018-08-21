@@ -63,6 +63,7 @@ class Wheels extends Component {
   }
 
   updateCar = (leftWheel, rightWheel) => {
+    if (leftWheel===undefined || rightWheel===undefined) return;
     this.props.mutate({
       update: this.update,
       variables: {
@@ -76,8 +77,6 @@ class Wheels extends Component {
     const data = store.readQuery({ query: CarQuery });
     data.car = mutation.data.controlCar.car
     store.writeQuery({ query: CarQuery, data });
-    this.setState({ leftWheel: data.car.leftWheel });
-    this.setState({ rightWheel: data.car.rightWheel });
   }
 
   handleLeftChange = (event, leftSlider) => {
@@ -95,6 +94,9 @@ class Wheels extends Component {
   componentWillReceiveProps = (props) => {
     // External props have changed (And have priority over graphql props)
     if (props.leftWheel !== undefined && props.rightWheel !== undefined){
+      if (props.leftWheel===this.state.leftWheel && props.rightWheel === this.state.rightWheel){
+        return; // Optimization
+      }
       this.setState({
         leftWheel: props.leftWheel,
         rightWheel: props.rightWheel
@@ -126,16 +128,14 @@ class Wheels extends Component {
     return (
       <div>
         <Grid container spacing={24} alignItems="center">
-          <Grid item xs={3} className={classes.root}></Grid>
-          <Grid item xs={3} className={classes.root}>
+          <Grid item xs={6} className={classes.root}>
             <Slider value={leftSlider} className={classes.slider} disabled={disabled} reversed onChange={this.handleLeftChange} vertical />
             <Typography align="center">{leftWheel.toFixed(1)}</Typography>
           </Grid>
-          <Grid item xs={3} className={classes.root}>
+          <Grid item xs={6} className={classes.root}>
             <Slider value={rightSlider} className={classes.slider} disabled={disabled} reversed onChange={this.handleRightChange} vertical />
             <Typography align="center">{rightWheel.toFixed(1)}</Typography>
           </Grid>
-          <Grid item xs={3} className={classes.root}></Grid>
         </Grid>
       </div>
     );

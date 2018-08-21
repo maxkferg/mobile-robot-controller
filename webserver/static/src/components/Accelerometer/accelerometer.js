@@ -35,13 +35,17 @@ class Accelerometer extends Component {
       isRunning: false,
       isEnabled: false
     };
-    this.count = 0;
+    this.lastSample = Date.now();
     this.handleClick = this.handleClick.bind(this);
     this.handleOrientation = this.handleOrientation.bind(this);
 
     if (window.DeviceOrientationEvent) {
       window.addEventListener('deviceorientation', this.handleOrientation, false);
       this.state.isEnabled = true;
+    }
+
+    if (window.screen.lockOrientation){
+      window.screen.lockOrientation("portrait-primary");
     }
 
     // Test
@@ -60,10 +64,12 @@ class Accelerometer extends Component {
 
   handleOrientation(event){
     if (!this.state.isRunning) return;
-    this.count += 1;
-    if (this.count % 100 > 0) return;
-    this.props.onMove(event);
-    console.log(event);
+    let duration = Date.now() - this.lastSample;
+    if (duration>150){
+      this.props.onMove(event);
+      this.lastSample = Date.now();
+      console.log(event);
+    }
   }
 
   handleClick(){
