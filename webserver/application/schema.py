@@ -35,8 +35,6 @@ class CarMutation(graphene.Mutation):
     car = graphene.Field(lambda: CarState)
 
     def mutate(self, info, leftWheel, rightWheel):
-        print("leftWheelWheel:",leftWheel)
-        print("rightWheelWheel:",rightWheel)
         car.set_state(leftWheel, rightWheel)
         return CarMutation(car=car)
 
@@ -57,15 +55,12 @@ class Query(graphene.ObjectType):
         return 'World'
 
     def resolve_leftWheel(self, info, **kwargs):
-        print('-->6',info)
         return 6
 
     def resolve_rightWheel(self, info, **kwargs):
-        print('-->8',info)
         return 8
 
     def resolve_car(self, info, **kwargs):
-        print('-->',info)
         return car
 
 

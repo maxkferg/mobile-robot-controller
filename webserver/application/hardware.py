@@ -2,7 +2,7 @@ import os
 from pysabertooth import Sabertooth
 
 class MotorController():
-    port = '/dev/tty.usbserial'
+    port = '/dev/ttyTHS2'
     baud = 9600
     address = 128
     timeout = 0.1
@@ -17,8 +17,8 @@ class MotorController():
 
     def drive(self, wheel, value):
         if self.use_hardware:
-            print("Sending %f to motor %i"%(value, wheel))
-            self.saber.drive(value, wheel)
+            print("Sending %.1f to motor %i"%(value, wheel))
+            self.saber.drive(wheel, value)
         else:
             print("Would send %f to motor %i"%(value, wheel))
 
