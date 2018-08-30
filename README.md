@@ -1,4 +1,4 @@
-# Stanford Toy Autonomous Racecar
+# Stanford Mobile Robot Control Dashboard
 
 
 Setup
