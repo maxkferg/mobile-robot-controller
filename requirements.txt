@@ -16,6 +16,6 @@ pysabertooth
 pytest==3.0.1
 pytest-cov==2.3.1
 pytest-flask==0.10.0
-requests==2.14.2
+requests==2.20.0
 six==1.10.0
 Werkzeug==0.11.10
